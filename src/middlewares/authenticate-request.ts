@@ -1,5 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
-import type { RequestHandler } from 'express';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { db } from '../database/database-client.js';
 import { ApiError } from '../lib/api-error.js';
 import { AUTH } from '../modules/auth/auth-constants.js';
@@ -28,4 +28,28 @@ export const authenticateRequest: RequestHandler = async (req, _, next) => {
   req.forbidden = ForbiddenError.from(req.ability);
 
   next();
+};
+
+export const authenticate = async (
+  req: Request,
+  res: Response,
+  next?: NextFunction
+) => {
+  const { [AUTH.ACCESS_TOKEN_COOKIE_NAME]: accessToken } = req.cookies;
+
+  if (!accessToken) {
+    throw ApiError.unauthorized('Access token not provided');
+  }
+
+  const { userId } = verifyAccessToken(accessToken);
+
+  const user = await db.users.findOneOrFail(userId);
+
+  const ability = createAbility(user);
+
+  req.userId = userId;
+  req.ability = ability;
+  req.forbidden = ForbiddenError.from(req.ability);
+
+  next?.();
 };

@@ -1,0 +1,31 @@
+import { OpenApiGeneratorV3 } from '@asteasolutions/zod-to-openapi';
+import fs from 'fs';
+import yaml from 'yaml';
+import { env } from '../config/env.js';
+import { registry } from './openapi-service.js';
+
+export const generateOpenAPIDocumentation = () => {
+  const generator = new OpenApiGeneratorV3(registry.definitions);
+
+  return generator.generateDocument({
+    openapi: '3.0.0',
+    info: {
+      version: '',
+      title: '',
+      description: '',
+    },
+    servers: [{ url: `http://localhost:${env.HTTP_PORT}` }],
+  });
+};
+
+export const convertOpenAPIDocToYAML = (
+  docs: ReturnType<typeof generateOpenAPIDocumentation>
+) => {
+  return yaml.stringify(docs);
+};
+
+export const writeOpenAPIDocToDisk = (yamlDoc: string) => {
+  fs.writeFileSync(`${__dirname}/openapi-docs.yaml`, yamlDoc, {
+    encoding: 'utf-8',
+  });
+};

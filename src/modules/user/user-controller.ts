@@ -1,105 +1,77 @@
 import { ForbiddenError } from '@casl/ability';
 import { wrap } from '@mikro-orm/postgresql';
-import { Router, type Request, type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { db } from '../../database/database-client.js';
 import { ApiResponse } from '../../lib/api-response.js';
-import { authenticateRequest } from '../../middlewares/authenticate-request.js';
-import { validateRequest } from '../../middlewares/validate-request.js';
-import { User } from './user-entity.js';
-import {
-  becomeTrainerSchema,
-  patchUserSchema,
-  userIdSchema,
-  type BecomeTrainerSchema,
-  type PatchUserSchema,
-  type UserIdSchema,
-} from './user-schemas.js';
+import { type PatchUserSchema, type UserIdSchema } from './user-schemas.js';
 
-export const userRouter = Router();
+export const getUserById = async (
+  req: Request<UserIdSchema>,
+  res: Response
+) => {
+  const { userId } = req.params;
 
-userRouter.get('/', (req: Request, res: Response) => {
-  // TODO: check
-  ForbiddenError.from(req.ability).throwUnlessCan('read', User);
+  const user = await db.users.findOneOrFail(userId);
 
-  // TODO: implementation
+  ForbiddenError.from(req.ability).throwUnlessCan('read', user);
 
-  throw new Error('Not implemented yet');
-});
+  res.json(ApiResponse.ok(user));
+};
 
-userRouter.get(
-  '/:userId',
-  validateRequest({ params: userIdSchema }),
-  authenticateRequest,
-  async (req: Request<UserIdSchema>, res: Response) => {
-    const { userId } = req.params;
+export const patchUserById = async (
+  req: Request<UserIdSchema, unknown, PatchUserSchema>,
+  res: Response
+) => {
+  const { userId } = req.params;
 
-    const user = await db.users.findOneOrFail(userId);
-    ForbiddenError.from(req.ability).throwUnlessCan('read', user);
+  const user = await db.users.findOneOrFail(userId);
 
-    res.json(ApiResponse.ok(user));
-  }
-);
+  Object.keys(req.body).forEach((field) =>
+    ForbiddenError.from(req.ability).throwUnlessCan('update', user, field)
+  );
 
-userRouter.patch(
-  '/:userId',
-  validateRequest({ params: userIdSchema, body: patchUserSchema }),
-  authenticateRequest,
-  async (
-    req: Request<UserIdSchema, unknown, PatchUserSchema>,
-    res: Response
-  ) => {
-    const { userId } = req.params;
+  wrap(user).assign(req.body);
 
-    const user = await db.users.findOneOrFail(userId);
+  await db.em.flush();
 
-    Object.keys(req.body).forEach((field) =>
-      ForbiddenError.from(req.ability).throwUnlessCan('update', user, field)
-    );
+  res.json(ApiResponse.ok(user));
+};
 
-    wrap(user).assign(req.body);
+export const deleteUserById = async (
+  req: Request<UserIdSchema>,
+  res: Response
+) => {
+  const { userId } = req.params;
 
-    await db.em.flush();
+  const user = await db.users.findOneOrFail(userId);
 
-    res.json(ApiResponse.ok(user));
-  }
-);
+  ForbiddenError.from(req.ability).throwUnlessCan('delete', user);
 
-userRouter.delete(
-  '/:userId',
-  validateRequest({ params: userIdSchema }),
-  authenticateRequest,
-  async (req: Request<UserIdSchema>, res: Response) => {
-    const { userId } = req.params;
+  await db.em.removeAndFlush(user);
 
-    const user = await db.users.findOneOrFail(userId);
-    ForbiddenError.from(req.ability).throwUnlessCan('delete', user);
+  res.json(ApiResponse.ok(user));
+};
 
-    await db.em.removeAndFlush(user);
+// userRouter.post(
+//   '/:userId/trainer-profile',
+//   validateRequest({ params: userIdSchema, body: becomeTrainerSchema }),
+//   authenticateRequest,
+//   async (
+//     req: Request<UserIdSchema, unknown, BecomeTrainerSchema>,
+//     res: Response
+//   ) => {
+//     const { userId } = req.params;
 
-    res.json(ApiResponse.ok(user));
-  }
-);
+//     const user = await db.users.findOneOrFail(userId);
+//     ForbiddenError.from(req.ability).throwUnlessCan('read', user);
 
-userRouter.post(
-  '/:userId/trainer-profile',
-  validateRequest({ params: userIdSchema, body: becomeTrainerSchema }),
-  authenticateRequest,
-  async (
-    req: Request<UserIdSchema, unknown, BecomeTrainerSchema>,
-    res: Response
-  ) => {
-    const { userId } = req.params;
+//     const trainer = db.trainers.create({ ...req.body, user });
+//     ForbiddenError.from(req.ability).throwUnlessCan('create', trainer);
 
-    const user = await db.users.findOneOrFail(userId);
-    ForbiddenError.from(req.ability).throwUnlessCan('read', user);
+//     user.trainer = trainer;
 
-    const trainer = db.trainers.create({ ...req.body, user });
-    ForbiddenError.from(req.ability).throwUnlessCan('create', trainer);
+//     await db.em.flush();
 
-    user.trainer = trainer;
-
-    await db.em.flush();
-
-    res.json(ApiResponse.ok(user));
-  }
-);
+//     res.json(ApiResponse.ok(user));
+//   }
+// );

@@ -5,6 +5,8 @@ import express from 'express';
 import helmet from 'helmet';
 import { Settings } from 'luxon';
 import morgan from 'morgan';
+import swaggerUI from 'swagger-ui-express';
+import yaml from 'yaml';
 import { env } from './config/env.js';
 import { db } from './database/database-client.js';
 import { logger } from './lib/logger.js';
@@ -13,8 +15,13 @@ import { authRouter } from './modules/auth/auth-controller.js';
 import { qaRouter } from './modules/qa/qa-router.js';
 import { specialtyRouter } from './modules/specialty/specialty-router.js';
 import { trainerRouter } from './modules/user/trainer/trainer-router.js';
-import { userRouter } from './modules/user/user-controller.js';
+import { userRouter } from './modules/user/user-router.js';
 import { wishlistRouter } from './modules/wishlist/wishlist-controller.js';
+import {
+  convertOpenAPIDocToYAML,
+  generateOpenAPIDocumentation,
+} from './openapi/openapi-generator.js';
+import './openapi/openapi-zod.js';
 import type { Ability } from './types/casl.js';
 
 declare global {
@@ -50,11 +57,20 @@ export const bootstrapApplication = async () => {
   app.use((_, __, next) => RequestContext.create(db.em, next));
 
   app.use('/auth', authRouter);
-  app.use('/users', userRouter);
+  app.use('/users', userRouter.getRouter());
   app.use('/trainers', trainerRouter);
   app.use('/wishlists', wishlistRouter);
   app.use('/specialties', specialtyRouter);
   app.use('/qa', qaRouter);
+
+  const openAPIDoc = generateOpenAPIDocumentation();
+  const openAPIDocYAML = convertOpenAPIDocToYAML(openAPIDoc);
+
+  app.use(
+    '/docs',
+    swaggerUI.serve,
+    swaggerUI.setup(yaml.parse(openAPIDocYAML))
+  );
 
   app.use(errorHandler);
 

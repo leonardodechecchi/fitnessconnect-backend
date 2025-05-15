@@ -1,22 +1,33 @@
-import { Router, type Request, type Response } from 'express';
+import {
+  Router,
+  type NextFunction,
+  type Request,
+  type Response,
+} from 'express';
 import type { ZodTypeAny } from 'zod';
 import { apiResponseSchema } from '../lib/api-response.js';
 import { validateRequest } from '../middlewares/validate-request.js';
 import type { ZodObjectWithEffect } from '../types/zod.js';
 import { registry } from './openapi-service.js';
-import { camelCaseToTitleCase, expressToOpenAPIPath } from './openapi-utils.js';
+import {
+  camelCaseToTitleCase,
+  expressToOpenAPIPath,
+  routeToClassName,
+} from './openapi-utils.js';
+
+type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
 type IDontKnow = unknown | never | any;
 type MaybePromise = void | Promise<void>;
 type RequestAny = Request<IDontKnow, IDontKnow, IDontKnow, IDontKnow>;
 type ResponseAny = Response<IDontKnow, Record<string, unknown>>;
 
-type Method = 'get' | 'post' | 'put' | 'patch' | 'delete';
-
 type MagicPath = `/${string}`;
-
-type MagicMiddleware = (req: RequestAny, res: ResponseAny) => MaybePromise;
-
+type MagicMiddleware = (
+  req: RequestAny,
+  res: ResponseAny,
+  next?: NextFunction
+) => MaybePromise;
 type MagicRouteP<PathSet extends boolean> = PathSet extends true
   ? [
       requestAndResponseSchema: RequestAndResponseSchema,
@@ -27,7 +38,6 @@ type MagicRouteP<PathSet extends boolean> = PathSet extends true
       requestAndResponseSchema: RequestAndResponseSchema,
       ...middleware: MagicMiddleware[]
     ];
-
 type MagicRouteR<PathSet extends boolean> = Omit<
   MagicRouter<PathSet>,
   'route' | 'getRouter' | 'use'
@@ -78,6 +88,8 @@ export class MagicRouter<PathSet extends boolean = false> {
       ? registry.register(`${camelCaseToTitleCase(handler?.name)} Input`, body)
       : null;
 
+    const className = routeToClassName(this.rootRoute);
+
     // TODO
     // const hasSecurity = middlewares.some(
     //   (middleware) => middleware.name === authenticateRequest.name
@@ -85,6 +97,7 @@ export class MagicRouter<PathSet extends boolean = false> {
 
     registry.registerPath({
       method,
+      tags: [className],
       path: this.getPath(path),
       request: {
         params,
@@ -168,5 +181,36 @@ export class MagicRouter<PathSet extends boolean = false> {
 
   public use(...args: Parameters<Router['use']>) {
     this.router.use(...args);
+  }
+
+  public route(path: MagicPath): MagicRouteR<true> {
+    const proxy = {
+      get: (...args: [RequestAndResponseSchema, ...MagicMiddleware[]]) => {
+        this.wrapper('get', path, ...args);
+        return proxy;
+      },
+      post: (...args: [RequestAndResponseSchema, ...MagicMiddleware[]]) => {
+        this.wrapper('post', path, ...args);
+        return proxy;
+      },
+      put: (...args: [RequestAndResponseSchema, ...MagicMiddleware[]]) => {
+        this.wrapper('put', path, ...args);
+        return proxy;
+      },
+      delete: (...args: [RequestAndResponseSchema, ...MagicMiddleware[]]) => {
+        this.wrapper('delete', path, ...args);
+        return proxy;
+      },
+      patch: (...args: [RequestAndResponseSchema, ...MagicMiddleware[]]) => {
+        this.wrapper('patch', path, ...args);
+        return proxy;
+      },
+    };
+
+    return proxy;
+  }
+
+  public getRouter() {
+    return this.router;
   }
 }
