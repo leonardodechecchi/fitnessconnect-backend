@@ -1,3 +1,11 @@
+import { z } from 'zod';
+
+export const apiResponseSchema = z.object({
+  success: z.boolean(),
+  message: z.string(),
+  data: z.record(z.string(), z.any()).optional(),
+});
+
 export class ApiResponse<T = any> {
   readonly code: number;
   readonly data: T;
@@ -15,7 +23,7 @@ export class ApiResponse<T = any> {
     return {
       success: this.success,
       message: this.message,
-      data: this.data,
+      ...(this.data ?? { data: this.data }),
     };
   }
 
@@ -28,6 +36,6 @@ export class ApiResponse<T = any> {
   }
 
   static noContent(message: string = 'No Content') {
-    return new ApiResponse(200, null, message);
+    return new ApiResponse(200, undefined, message);
   }
 }
