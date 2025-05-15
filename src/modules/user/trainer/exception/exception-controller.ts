@@ -1,0 +1,70 @@
+import { ForbiddenError } from '@casl/ability';
+import type { RequestHandler } from 'express';
+import { DateTime } from 'luxon';
+import { db } from '../../../../database/database-client.js';
+import { ApiError } from '../../../../lib/api-error.js';
+import { ApiResponse } from '../../../../lib/api-response.js';
+import type { TrainerIdSchema } from '../trainer-schemas.js';
+import type { CreateExceptionSchema } from './exception-schemas.js';
+
+export const getExceptions: RequestHandler<TrainerIdSchema> = async (
+  req,
+  res
+) => {
+  const { trainerId } = req.params;
+
+  const now = DateTime.now().toJSDate();
+
+  const trainer = await db.trainers.findOneOrFail(trainerId, {
+    populate: ['exceptions'],
+    populateWhere: {
+      exceptions: {
+        startDatetime: { $gt: now },
+      },
+    },
+  });
+
+  const forbidden = ForbiddenError.from(req.ability);
+
+  Object.keys(trainer).forEach((field) =>
+    forbidden.throwUnlessCan('read', trainer, field)
+  );
+
+  res.json(ApiResponse.ok(trainer.exceptions.getItems()));
+};
+
+export const createException: RequestHandler<
+  TrainerIdSchema,
+  unknown,
+  CreateExceptionSchema
+> = async (req, res) => {
+  const { trainerId } = req.params;
+  const { startDatetime, endDatetime } = req.body;
+
+  const start = DateTime.fromISO(startDatetime).toJSDate();
+  const end = DateTime.fromISO(endDatetime).toJSDate();
+
+  const trainer = await db.trainers.findOneOrFail(trainerId, {
+    populate: ['exceptions'],
+    populateWhere: {
+      exceptions: {
+        startDatetime: { $lt: end },
+        endDatetime: { $gt: start },
+      },
+    },
+  });
+
+  ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
+
+  if (trainer.exceptions.length > 0) {
+    throw ApiError.conflict('The exception overlaps with an existing one');
+  }
+
+  const exception = db.exceptions.create({ ...req.body, trainer });
+  ForbiddenError.from(req.ability).throwUnlessCan('create', exception);
+
+  await db.em.flush();
+
+  const response = ApiResponse.created(exception);
+  res.status(response.code).json(response);
+};
