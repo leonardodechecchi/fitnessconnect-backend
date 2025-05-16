@@ -16,7 +16,10 @@ import { qaRouter } from './modules/qa/qa-router.js';
 import { specialtyRouter } from './modules/specialty/specialty-router.js';
 import { trainerRouter } from './modules/user/trainer/trainer-router.js';
 import { USER_ROUTER_ROOT, userRouter } from './modules/user/user-router.js';
-import { wishlistRouter } from './modules/wishlist/wishlist-controller.js';
+import {
+  WISHLIST_ROUTER_ROOT,
+  wishlistRouter,
+} from './modules/wishlist/wishlist-router.js';
 import {
   convertOpenAPIDocToYAML,
   generateOpenAPIDocumentation,
@@ -60,7 +63,7 @@ export const bootstrapApplication = async () => {
   app.use(AUTH_ROUTER_ROOT, authRouter.getRouter());
   app.use(USER_ROUTER_ROOT, userRouter.getRouter());
   app.use('/trainers', trainerRouter);
-  app.use('/wishlists', wishlistRouter);
+  app.use(WISHLIST_ROUTER_ROOT, wishlistRouter.getRouter());
   app.use('/specialties', specialtyRouter);
   app.use('/qa', qaRouter);
 

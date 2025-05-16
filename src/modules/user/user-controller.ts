@@ -26,8 +26,10 @@ export const patchUserById = async (
 
   const user = await db.users.findOneOrFail(userId);
 
+  const forbiddenError = ForbiddenError.from(req.ability);
+
   Object.keys(req.body).forEach((field) =>
-    ForbiddenError.from(req.ability).throwUnlessCan('update', user, field)
+    forbiddenError.throwUnlessCan('update', user, field)
   );
 
   wrap(user).assign(req.body);
