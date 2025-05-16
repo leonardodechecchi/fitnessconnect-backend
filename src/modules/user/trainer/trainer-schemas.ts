@@ -10,8 +10,22 @@ export const getTrainerSlotSchema = z.object({
 });
 
 export const slotSchema = z.object({
-  start: z.string().datetime(),
-  end: z.string().datetime(),
+  start: z
+    .string()
+    .datetime()
+    .openapi({
+      example: DateTime.utc()
+        .set({ hour: 15, minute: 0, second: 0, millisecond: 0 })
+        .toISO(),
+    }),
+  end: z
+    .string()
+    .datetime()
+    .openapi({
+      example: DateTime.utc()
+        .set({ hour: 16, minute: 0, second: 0, millisecond: 0 })
+        .toISO(),
+    }),
 });
 
 export const slotArraySchema = z.array(slotSchema);
