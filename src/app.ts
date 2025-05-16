@@ -13,7 +13,10 @@ import { logger } from './lib/logger.js';
 import { errorHandler } from './middlewares/error-handler.js';
 import { AUTH_ROUTER_ROOT, authRouter } from './modules/auth/auth-router.js';
 import { qaRouter } from './modules/qa/qa-router.js';
-import { specialtyRouter } from './modules/specialty/specialty-router.js';
+import {
+  SPECIALTY_ROUTER_ROOT,
+  specialtyRouter,
+} from './modules/specialty/specialty-router.js';
 import {
   TRAINER_ROUTER_ROOT,
   trainerRouter,
@@ -67,7 +70,7 @@ export const bootstrapApplication = async () => {
   app.use(USER_ROUTER_ROOT, userRouter.getRouter());
   app.use(TRAINER_ROUTER_ROOT, trainerRouter.getRouter());
   app.use(WISHLIST_ROUTER_ROOT, wishlistRouter.getRouter());
-  app.use('/specialties', specialtyRouter);
+  app.use(SPECIALTY_ROUTER_ROOT, specialtyRouter.getRouter());
   app.use('/qa', qaRouter);
 
   const openAPIDoc = generateOpenAPIDocumentation();

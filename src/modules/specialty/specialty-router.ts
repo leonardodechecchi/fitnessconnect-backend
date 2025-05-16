@@ -1,6 +1,5 @@
-import { Router } from 'express';
-import { authenticateRequest } from '../../middlewares/authenticate-request.js';
-import { validateRequest } from '../../middlewares/validate-request.js';
+import { authenticate } from '../../middlewares/authenticate-request.js';
+import { MagicRouter } from '../../openapi/magic-router.js';
 import {
   createSpecialty,
   deleteSpecialty,
@@ -8,23 +7,42 @@ import {
 } from './specialty-controller.js';
 import {
   createSpecialtySchema,
+  getSpecialtySchema,
+  specialtyArraySchema,
   specialtyIdSchema,
+  specialtySchema,
 } from './specialty-schemas.js';
 
-export const specialtyRouter = Router();
+export const SPECIALTY_ROUTER_ROOT = '/specialties';
 
-specialtyRouter.get('/', authenticateRequest, getSpecialties);
+export const specialtyRouter = new MagicRouter(SPECIALTY_ROUTER_ROOT);
+
+specialtyRouter.get(
+  '/',
+  {
+    requestSchema: { query: getSpecialtySchema },
+    responseModel: specialtyArraySchema,
+  },
+  authenticate,
+  getSpecialties
+);
 
 specialtyRouter.post(
   '/',
-  validateRequest({ body: createSpecialtySchema }),
-  authenticateRequest,
+  {
+    requestSchema: { body: createSpecialtySchema },
+    responseModel: specialtySchema,
+  },
+  authenticate,
   createSpecialty
 );
 
 specialtyRouter.delete(
   '/:specialtyId',
-  validateRequest({ params: specialtyIdSchema }),
-  authenticateRequest,
+  {
+    requestSchema: { params: specialtyIdSchema },
+    responseModel: specialtySchema,
+  },
+  authenticate,
   deleteSpecialty
 );
