@@ -23,7 +23,7 @@ export class ApiResponse<T = any> {
     return {
       success: this.success,
       message: this.message,
-      ...(this.data ?? { data: this.data }),
+      data: this.data,
     };
   }
 
@@ -36,6 +36,10 @@ export class ApiResponse<T = any> {
   }
 
   static noContent(message: string = 'No Content') {
+    return new ApiResponse(200, undefined, message);
+  }
+
+  static noData(message: string = 'No Content') {
     return new ApiResponse(200, undefined, message);
   }
 }

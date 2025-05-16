@@ -1,136 +1,108 @@
-import { Router, type Request, type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { env } from '../../../config/env.js';
-import { db } from '../../../database/database-client.js';
-import { ApiError } from '../../../lib/api-error.js';
-import { validateRequest } from '../../../middlewares/validate-request.js';
-import { facebook, FACEBOOK_ERRORS } from '../../../services/facebook.js';
-import { google, GOOGLE_ERRORS } from '../../../services/google.js';
-import { verifyStateToken } from '../../../utils/jwt.js';
-import { createAuthSession } from '../auth-service.js';
-import {
-  facebookLoginCbSchema,
-  facebookLoginSchema,
-  googleLoginCbSchema,
-  googleLoginSchema,
-  type FacebookLoginCbSchema,
-  type FacebookLoginSchema,
-  type GoogleLoginCbSchema,
-  type GoogleLoginSchema,
-} from './oauth-schemas.js';
+import { facebook } from '../../../services/facebook.js';
+import { google } from '../../../services/google.js';
 
-export const oauthRouter = Router();
+export const googleOAuthRedirect = async (_: Request, res: Response) => {
+  const url = google.generateAuthUrl(env.CLIENT_SIDE_URL);
+  res.redirect(url);
+};
 
-oauthRouter.get(
-  '/google',
-  validateRequest({ query: googleLoginSchema }),
-  async (
-    req: Request<unknown, unknown, unknown, GoogleLoginSchema>,
-    res: Response
-  ) => {
-    const redirectUrl = req.query.redirectUrl || env.CLIENT_SIDE_URL;
-    const url = google.generateAuthUrl(redirectUrl);
-    res.redirect(url);
-  }
-);
+export const googleOAuthCallback = async (req: Request, res: Response) => {};
 
-oauthRouter.get(
-  '/google/callback',
-  validateRequest({ query: googleLoginCbSchema }),
-  async (
-    req: Request<unknown, unknown, unknown, GoogleLoginCbSchema>,
-    res: Response
-  ) => {
-    if ('error' in req.query) {
-      const { error, error_description } = req.query;
+export const facebookOAuthRedirect = async (_: Request, res: Response) => {
+  const url = facebook.generateAuthUrl(env.CLIENT_SIDE_URL);
+  res.redirect(url);
+};
 
-      const message = error_description || 'Something went wrong';
-      const code = GOOGLE_ERRORS[error as keyof typeof GOOGLE_ERRORS] || 400;
+export const facebookOAuthCallback = async (req: Request, res: Response) => {};
 
-      throw new ApiError(code, message);
-    }
+// oauthRouter.get(
+//   '/google/callback',
+//   validateRequest({ query: googleLoginCbSchema }),
+//   async (
+//     req: Request<unknown, unknown, unknown, GoogleLoginCbSchema>,
+//     res: Response
+//   ) => {
+//     if ('error' in req.query) {
+//       const { error, error_description } = req.query;
 
-    const { code, state } = req.query;
-    const { redirectUrl } = verifyStateToken(state);
+//       const message = error_description || 'Something went wrong';
+//       const code = GOOGLE_ERRORS[error as keyof typeof GOOGLE_ERRORS] || 400;
 
-    const tokens = await google.getTokens(code);
-    const payload = await google.verifyIdToken(tokens.id_token);
+//       throw new ApiError(code, message);
+//     }
 
-    let user = await db.users.findOne({ email: payload.email });
-    if (!user) {
-      user = db.users.create({
-        firstName: payload.given_name,
-        lastName: payload.family_name,
-        email: payload.email,
-        profilePictureUrl: payload.picture,
-      });
+//     const { code, state } = req.query;
+//     const { redirectUrl } = verifyStateToken(state);
 
-      await db.em.flush();
-    }
+//     const tokens = await google.getTokens(code);
+//     const payload = await google.verifyIdToken(tokens.id_token);
 
-    createAuthSession(res, user);
+//     let user = await db.users.findOne({ email: payload.email });
+//     if (!user) {
+//       user = db.users.create({
+//         firstName: payload.given_name,
+//         lastName: payload.family_name,
+//         email: payload.email,
+//         profilePictureUrl: payload.picture,
+//         timezone: '',
+//       });
 
-    res.redirect(redirectUrl);
-  }
-);
+//       await db.em.flush();
+//     }
 
-oauthRouter.get(
-  '/facebook',
-  validateRequest({ query: facebookLoginSchema }),
-  async (
-    req: Request<unknown, unknown, unknown, FacebookLoginSchema>,
-    res: Response
-  ) => {
-    const redirectUrl = req.query.redirectUrl || env.CLIENT_SIDE_URL;
-    const url = facebook.generateAuthUrl(redirectUrl);
-    res.redirect(url);
-  }
-);
+//     createAuthSession(res, user);
 
-oauthRouter.get(
-  '/facebook/callback',
-  validateRequest({ query: facebookLoginCbSchema }),
-  async (
-    req: Request<unknown, unknown, unknown, FacebookLoginCbSchema>,
-    res: Response
-  ) => {
-    if ('error' in req.query) {
-      const { error, error_description } = req.query;
+//     res.redirect(redirectUrl);
+//   }
+// );
 
-      const message = error_description || 'Something went wrong';
-      const code =
-        FACEBOOK_ERRORS[error as keyof typeof FACEBOOK_ERRORS] || 400;
+// oauthRouter.get(
+//   '/facebook/callback',
+//   validateRequest({ query: facebookLoginCbSchema }),
+//   async (
+//     req: Request<unknown, unknown, unknown, FacebookLoginCbSchema>,
+//     res: Response
+//   ) => {
+//     if ('error' in req.query) {
+//       const { error, error_description } = req.query;
 
-      throw new ApiError(code, message);
-    }
+//       const message = error_description || 'Something went wrong';
+//       const code =
+//         FACEBOOK_ERRORS[error as keyof typeof FACEBOOK_ERRORS] || 400;
 
-    const { state, code, granted_scopes } = req.query;
-    const { redirectUrl } = verifyStateToken(state);
+//       throw new ApiError(code, message);
+//     }
 
-    const hasGrantedEmail = granted_scopes
-      .split(',')
-      .find((scope) => scope === 'email');
+//     const { state, code, granted_scopes } = req.query;
+//     const { redirectUrl } = verifyStateToken(state);
 
-    if (!hasGrantedEmail) {
-      throw ApiError.forbidden('Email permission is required');
-    }
+//     const hasGrantedEmail = granted_scopes
+//       .split(',')
+//       .find((scope) => scope === 'email');
 
-    const tokens = await facebook.getAccessToken(code);
-    const userProfile = await facebook.getUserProfileData(tokens.access_token);
+//     if (!hasGrantedEmail) {
+//       throw ApiError.forbidden('Email permission is required');
+//     }
 
-    let user = await db.users.findOne({ email: userProfile.email });
-    if (!user) {
-      user = db.users.create({
-        firstName: userProfile.first_name,
-        lastName: userProfile.last_name,
-        email: userProfile.email,
-        profilePictureUrl: userProfile.picture.data.url,
-      });
+//     const tokens = await facebook.getAccessToken(code);
+//     const userProfile = await facebook.getUserProfileData(tokens.access_token);
 
-      await db.em.flush();
-    }
+//     let user = await db.users.findOne({ email: userProfile.email });
+//     if (!user) {
+//       user = db.users.create({
+//         firstName: userProfile.first_name,
+//         lastName: userProfile.last_name,
+//         email: userProfile.email,
+//         profilePictureUrl: userProfile.picture.data.url,
+//       });
 
-    createAuthSession(res, user);
+//       await db.em.flush();
+//     }
 
-    res.redirect(redirectUrl);
-  }
-);
+//     createAuthSession(res, user);
+
+//     res.redirect(redirectUrl);
+//   }
+// );

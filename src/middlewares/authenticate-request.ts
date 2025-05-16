@@ -23,7 +23,6 @@ export const authenticateRequest: RequestHandler = async (req, _, next) => {
 
   const ability = createAbility(user);
 
-  req.userId = userId;
   req.ability = ability;
   req.forbidden = ForbiddenError.from(req.ability);
 
@@ -41,13 +40,13 @@ export const authenticate = async (
     throw ApiError.unauthorized('Access token not provided');
   }
 
-  const { userId } = verifyAccessToken(accessToken);
+  const payload = verifyAccessToken(accessToken);
 
-  const user = await db.users.findOneOrFail(userId);
+  const user = await db.users.findOneOrFail(payload.userId);
 
   const ability = createAbility(user);
 
-  req.userId = userId;
+  req.tokenPayload = payload;
   req.ability = ability;
   req.forbidden = ForbiddenError.from(req.ability);
 

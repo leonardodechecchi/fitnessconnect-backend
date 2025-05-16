@@ -11,11 +11,11 @@ import { env } from './config/env.js';
 import { db } from './database/database-client.js';
 import { logger } from './lib/logger.js';
 import { errorHandler } from './middlewares/error-handler.js';
-import { authRouter } from './modules/auth/auth-controller.js';
+import { AUTH_ROUTER_ROOT, authRouter } from './modules/auth/auth-router.js';
 import { qaRouter } from './modules/qa/qa-router.js';
 import { specialtyRouter } from './modules/specialty/specialty-router.js';
 import { trainerRouter } from './modules/user/trainer/trainer-router.js';
-import { userRouter } from './modules/user/user-router.js';
+import { USER_ROUTER_ROOT, userRouter } from './modules/user/user-router.js';
 import { wishlistRouter } from './modules/wishlist/wishlist-controller.js';
 import {
   convertOpenAPIDocToYAML,
@@ -23,11 +23,12 @@ import {
 } from './openapi/openapi-generator.js';
 import './openapi/openapi-zod.js';
 import type { Ability } from './types/casl.js';
+import type { JwtPayload } from './utils/jwt.js';
 
 declare global {
   namespace Express {
     interface Request {
-      userId: string;
+      tokenPayload: JwtPayload;
       ability: Ability;
       forbidden: ForbiddenError<Ability>;
     }
@@ -56,8 +57,8 @@ export const bootstrapApplication = async () => {
   app.use(helmet());
   app.use((_, __, next) => RequestContext.create(db.em, next));
 
-  app.use('/auth', authRouter);
-  app.use('/users', userRouter.getRouter());
+  app.use(AUTH_ROUTER_ROOT, authRouter.getRouter());
+  app.use(USER_ROUTER_ROOT, userRouter.getRouter());
   app.use('/trainers', trainerRouter);
   app.use('/wishlists', wishlistRouter);
   app.use('/specialties', specialtyRouter);
