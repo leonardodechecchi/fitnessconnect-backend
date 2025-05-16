@@ -75,9 +75,10 @@ export const bootstrapApplication = async () => {
 
   app.use(errorHandler);
 
-  const httpServer = app.listen(env.HTTP_PORT, () =>
-    logger.info(`Server listening on http://localhost:${env.HTTP_PORT}`)
-  );
+  const httpServer = app.listen(env.HTTP_PORT, () => {
+    logger.info(`Server listening on http://localhost:${env.HTTP_PORT}`);
+    logger.info(`API Docs on http://localhost:${env.HTTP_PORT}/docs`);
+  });
 
   const shutdown = async (cb?: () => void) => {
     try {

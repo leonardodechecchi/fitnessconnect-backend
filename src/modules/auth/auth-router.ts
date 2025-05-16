@@ -33,4 +33,4 @@ authRouter.get('/oauth/google/callback', {}, googleOAuthCallback);
 
 authRouter.get('/oauth/facebook', {}, facebookOAuthRedirect);
 
-authRouter.get('/oauth/google/callback', {}, facebookOAuthCallback);
+authRouter.get('/oauth/facebook/callback', {}, facebookOAuthCallback);
