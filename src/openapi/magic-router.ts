@@ -90,6 +90,8 @@ export class MagicRouter<PathSet extends boolean = false> {
 
     const className = routeToClassName(this.rootRoute);
 
+    console.log(className);
+
     // TODO
     // const hasSecurity = middlewares.some(
     //   (middleware) => middleware.name === authenticateRequest.name

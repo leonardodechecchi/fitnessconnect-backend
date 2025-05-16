@@ -1,14 +1,17 @@
+import pluralize from 'pluralize';
+
 export const expressToOpenAPIPath = (route?: string): string => {
   return (route ?? '').replace(/\/:(\w+)/g, '/{$1}');
 };
 
 export const routeToClassName = (route?: string) => {
-  const cleanedRoute = (route ?? '').replace(/^\/|\/$/g, '');
+  const cleanedRoute = (route ?? '')
+    .replace(/^\/|\/$/g, '')
+    .toLocaleLowerCase();
 
-  const className =
-    cleanedRoute.charAt(0).toUpperCase() + cleanedRoute.slice(1).toLowerCase();
+  const singular = pluralize.singular(cleanedRoute);
 
-  return className.endsWith('s') ? className.slice(0, -1) : className;
+  return singular.charAt(0).toUpperCase() + singular.slice(1);
 };
 
 export const camelCaseToTitleCase = (input?: string): string => {
