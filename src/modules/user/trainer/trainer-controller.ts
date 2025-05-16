@@ -1,5 +1,5 @@
 import { ForbiddenError } from '@casl/ability';
-import { type RequestHandler } from 'express';
+import { type Request, type Response } from 'express';
 import { DateTime, Interval } from 'luxon';
 import { db } from '../../../database/database-client.js';
 import { ApiResponse } from '../../../lib/api-response.js';
@@ -10,7 +10,10 @@ import {
   type TrainerIdSchema,
 } from './trainer-schemas.js';
 
-export const getTrainer: RequestHandler<TrainerIdSchema> = async (req, res) => {
+export const getTrainerById = async (
+  req: Request<TrainerIdSchema>,
+  res: Response
+) => {
   const { trainerId } = req.params;
 
   const trainer = await db.trainers.findOneOrFail(trainerId, {
@@ -19,7 +22,7 @@ export const getTrainer: RequestHandler<TrainerIdSchema> = async (req, res) => {
 
   ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
 
-  res.json(trainer);
+  res.json(ApiResponse.ok(trainer));
 };
 
 type Slot = {
@@ -27,12 +30,10 @@ type Slot = {
   end: DateTime;
 };
 
-export const getTrainerSlots: RequestHandler<
-  TrainerIdSchema,
-  unknown,
-  unknown,
-  GetTrainerSlotsSchema
-> = async (req, res): Promise<any> => {
+export const getTrainerSlots = async (
+  req: Request<TrainerIdSchema, unknown, unknown, GetTrainerSlotsSchema>,
+  res: Response
+): Promise<any> => {
   const targetDate = DateTime.fromISO(req.query.date, { zone: 'utc' });
 
   const dayInterval = Interval.fromDateTimes(

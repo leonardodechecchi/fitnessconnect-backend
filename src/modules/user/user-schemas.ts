@@ -2,6 +2,17 @@ import { DateTime } from 'luxon';
 import { z } from 'zod';
 import { UserStatus } from './user-entity.js';
 
+export const userSchema = z.object({
+  id: z.string().uuid(),
+  firstName: z.string(),
+  lastName: z.string(),
+  email: z.string().email(),
+  password: z.string().optional(),
+  profilePictureUrl: z.string().optional(),
+  fullName: z.string(),
+  timezone: z.string(),
+});
+
 export const userIdSchema = z.object({
   userId: z.string().uuid(),
 });

@@ -5,7 +5,7 @@ import {
   type Response,
 } from 'express';
 import type { ZodTypeAny } from 'zod';
-import { apiResponseSchema } from '../lib/api-response.js';
+import { defineApiResponseSchema } from '../lib/api-response.js';
 import { validateRequest } from '../middlewares/validate-request.js';
 import type { ZodObjectWithEffect } from '../types/zod.js';
 import { registry } from './openapi-service.js';
@@ -80,7 +80,7 @@ export class MagicRouter<PathSet extends boolean = false> {
     const body = requestSchema?.body;
     const params = requestSchema?.params;
     const query = requestSchema?.query;
-    const responseSchema = responseModel ?? apiResponseSchema;
+    const responseSchema = defineApiResponseSchema(responseModel);
 
     const handler = middlewares[middlewares.length - 1];
 

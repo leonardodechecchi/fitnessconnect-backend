@@ -6,6 +6,14 @@ export const apiResponseSchema = z.object({
   data: z.record(z.string(), z.any()).optional(),
 });
 
+export const defineApiResponseSchema = <T>(schema?: z.ZodType<T>) => {
+  return z.object({
+    success: z.boolean(),
+    message: z.string(),
+    data: schema ?? z.record(z.string(), z.any()).optional(),
+  });
+};
+
 export class ApiResponse<T = any> {
   readonly code: number;
   readonly data: T;

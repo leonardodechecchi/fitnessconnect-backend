@@ -1,5 +1,6 @@
 import { authenticate } from '../../middlewares/authenticate-request.js';
 import { MagicRouter } from '../../openapi/magic-router.js';
+import { userSchema } from '../user/user-schemas.js';
 import { getMe, login, logout, refresh, register } from './auth-controller.js';
 import { loginSchema, registerSchema } from './auth-schemas.js';
 import {
@@ -25,7 +26,7 @@ authRouter.post('/logout', {}, logout);
 
 authRouter.post('/refresh', {}, refresh);
 
-authRouter.get('/me', {}, authenticate, getMe);
+authRouter.get('/me', { responseModel: userSchema }, authenticate, getMe);
 
 authRouter.get('/oauth/google', {}, googleOAuthRedirect);
 

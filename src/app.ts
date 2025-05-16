@@ -14,7 +14,10 @@ import { errorHandler } from './middlewares/error-handler.js';
 import { AUTH_ROUTER_ROOT, authRouter } from './modules/auth/auth-router.js';
 import { qaRouter } from './modules/qa/qa-router.js';
 import { specialtyRouter } from './modules/specialty/specialty-router.js';
-import { trainerRouter } from './modules/user/trainer/trainer-router.js';
+import {
+  TRAINER_ROUTER_ROOT,
+  trainerRouter,
+} from './modules/user/trainer/trainer-router.js';
 import { USER_ROUTER_ROOT, userRouter } from './modules/user/user-router.js';
 import {
   WISHLIST_ROUTER_ROOT,
@@ -62,7 +65,7 @@ export const bootstrapApplication = async () => {
 
   app.use(AUTH_ROUTER_ROOT, authRouter.getRouter());
   app.use(USER_ROUTER_ROOT, userRouter.getRouter());
-  app.use('/trainers', trainerRouter);
+  app.use(TRAINER_ROUTER_ROOT, trainerRouter.getRouter());
   app.use(WISHLIST_ROUTER_ROOT, wishlistRouter.getRouter());
   app.use('/specialties', specialtyRouter);
   app.use('/qa', qaRouter);

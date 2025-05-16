@@ -5,7 +5,7 @@ import {
   getUserById,
   patchUserById,
 } from './user-controller.js';
-import { patchUserSchema, userIdSchema } from './user-schemas.js';
+import { patchUserSchema, userIdSchema, userSchema } from './user-schemas.js';
 
 export const USER_ROUTER_ROOT = '/users';
 
@@ -13,21 +13,24 @@ export const userRouter = new MagicRouter(USER_ROUTER_ROOT);
 
 userRouter.get(
   '/:userId',
-  { requestSchema: { params: userIdSchema } },
+  { requestSchema: { params: userIdSchema }, responseModel: userSchema },
   authenticate,
   getUserById
 );
 
 userRouter.patch(
   '/:userId',
-  { requestSchema: { params: userIdSchema, body: patchUserSchema } },
+  {
+    requestSchema: { params: userIdSchema, body: patchUserSchema },
+    responseModel: userSchema,
+  },
   authenticate,
   patchUserById
 );
 
 userRouter.delete(
   '/:userId',
-  { requestSchema: { params: userIdSchema } },
+  { requestSchema: { params: userIdSchema }, responseModel: userSchema },
   authenticate,
   deleteUserById
 );
