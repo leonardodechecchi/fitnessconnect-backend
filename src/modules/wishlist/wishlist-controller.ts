@@ -3,11 +3,27 @@ import { wrap } from '@mikro-orm/core';
 import { type Request, type Response } from 'express';
 import { db } from '../../database/database-client.js';
 import { ApiResponse } from '../../lib/api-response.js';
+import type { PaginationSchema } from '../common/common-schemas.js';
 import {
   type CreateWishlistSchema,
   type PatchWishlistSchema,
   type WishlistIdSchema,
 } from './wishlist-schemas.js';
+
+export const getWishlists = async (
+  req: Request<unknown, unknown, unknown, PaginationSchema>,
+  res: Response
+) => {
+  const { userId } = req.tokenPayload;
+  const { page, limit } = req.query;
+
+  const wishlists = await db.wishlists.find(
+    { owner: userId },
+    { offset: (page - 1) * limit, limit }
+  );
+
+  res.json(ApiResponse.ok(wishlists));
+};
 
 export const createWishlist = async (
   req: Request<unknown, unknown, CreateWishlistSchema>,

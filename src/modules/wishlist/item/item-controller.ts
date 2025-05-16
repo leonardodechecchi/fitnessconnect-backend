@@ -2,8 +2,27 @@ import { ForbiddenError } from '@casl/ability';
 import { type Request, type Response } from 'express';
 import { db } from '../../../database/database-client.js';
 import { ApiResponse } from '../../../lib/api-response.js';
+import type { PaginationSchema } from '../../common/common-schemas.js';
 import type { WishlistIdSchema } from '../wishlist-schemas.js';
 import { type CreateItemSchema, type ItemIdSchema } from './item-schemas.js';
+
+export const getWishlistItems = async (
+  req: Request<WishlistIdSchema, unknown, unknown, PaginationSchema>,
+  res: Response
+) => {
+  const { wishlistId } = req.params;
+  const { page, limit } = req.query;
+
+  const wishlist = await db.wishlists.findOneOrFail(wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('read', wishlist);
+
+  const items = await db.items.find(
+    { wishlist: wishlistId },
+    { offset: (page - 1) * limit, limit }
+  );
+
+  res.json(ApiResponse.ok(items));
+};
 
 // TODO: check CASL permissions
 export const createWishlistItem = async (
