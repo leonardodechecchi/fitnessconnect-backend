@@ -22,6 +22,26 @@ import { oauthRouter } from './oauth/oauth-controller.js';
 
 export const authRouter = Router();
 
+export const getMe = async (req: Request, res: Response) => {
+  throw new Error('Method not implemented');
+};
+
+export const login = async (req: Request, res: Response) => {
+  throw new Error('Method not implemented');
+};
+
+export const register = async (req: Request, res: Response) => {
+  throw new Error('Method not implemented');
+};
+
+export const logout = async (req: Request, res: Response) => {
+  throw new Error('Method not implemented');
+};
+
+export const refresh = async (req: Request, res: Response) => {
+  throw new Error('Method not implemented');
+};
+
 authRouter.get(
   '/me',
   authenticateRequest,

@@ -11,7 +11,7 @@ import { env } from './config/env.js';
 import { db } from './database/database-client.js';
 import { logger } from './lib/logger.js';
 import { errorHandler } from './middlewares/error-handler.js';
-import { authRouter } from './modules/auth/auth-controller.js';
+import { authRouter } from './modules/auth/auth-router.js';
 import { qaRouter } from './modules/qa/qa-router.js';
 import { specialtyRouter } from './modules/specialty/specialty-router.js';
 import { trainerRouter } from './modules/user/trainer/trainer-router.js';
@@ -55,7 +55,8 @@ export const bootstrapApplication = async () => {
   app.use(helmet());
   app.use((_, __, next) => RequestContext.create(db.em, next));
 
-  app.use('/auth', authRouter);
+  // app.use('/auth', authRouter);
+  app.use(authRouter.rootPath, authRouter.router);
   // app.use('/users', userRouter);
   app.use(userRouter.rootPath, userRouter.router);
   app.use('/trainers', trainerRouter);
