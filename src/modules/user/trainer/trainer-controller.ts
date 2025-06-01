@@ -1,8 +1,27 @@
 import type { Request, Response } from 'express';
-import { DateTime } from 'luxon';
 import { db } from '../../../database/database-client.js';
 import { ResponseHandler } from '../../../lib/response-handler.js';
+import type { PaginationParamSchema } from '../../common/common-schemas.js';
 import { type TrainerIdSchema } from './trainer-schemas.js';
+
+export const getTrainers = async (
+  req: Request<unknown, unknown, unknown, PaginationParamSchema>,
+  res: Response
+) => {
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+
+  const [trainers, totalItems] = await db.trainers.findAndCount(
+    {},
+    { offset: (page - 1) * limit, limit, populate: ['user'] }
+  );
+
+  return ResponseHandler.from(res).paginated(trainers, {
+    page,
+    limit,
+    totalItems,
+  });
+};
 
 export const getTrainerById = async (
   req: Request<TrainerIdSchema>,
@@ -19,11 +38,6 @@ export const getTrainerSlots = async (
   req: Request<TrainerIdSchema>,
   res: Response
 ) => {};
-
-type Slot = {
-  start: DateTime;
-  end: DateTime;
-};
 
 // export const getTrainerSlots: RequestHandler<
 //   TrainerIdSchema,
