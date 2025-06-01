@@ -61,11 +61,9 @@ export const bootstrapApplication = async () => {
   app.use(helmet());
   app.use((_, __, next) => RequestContext.create(db.em, next));
 
-  // app.use('/auth', authRouter);
   app.use(authRouter.rootPath, authRouter.router);
-  // app.use('/users', userRouter);
   app.use(userRouter.rootPath, userRouter.router);
-  app.use('/trainers', trainerRouter);
+  app.use(trainerRouter.rootPath, trainerRouter.router);
   app.use('/wishlists', wishlistRouter);
   app.use('/specialties', specialtyRouter);
   app.use('/qa', qaRouter);
