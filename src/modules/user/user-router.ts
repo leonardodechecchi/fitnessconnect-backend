@@ -8,9 +8,9 @@ import {
 } from './user-controller.js';
 import {
   patchUserSchema,
-  userArraySchema,
   userIdSchema,
   userSchema,
+  usersSchema,
 } from './user-schemas.js';
 
 export const userRouter = new SmartRouter('/users');
@@ -19,7 +19,7 @@ userRouter.get(
   '/',
   {
     request: { query: paginationSchema },
-    response: userArraySchema,
+    response: usersSchema,
   },
   getUsers
 );

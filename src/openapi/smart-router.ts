@@ -6,11 +6,16 @@ import {
 } from 'express';
 import {
   z,
+  ZodArray,
   ZodSchema,
   type AnyZodObject,
   type ZodEffects,
   type ZodTypeAny,
 } from 'zod';
+import {
+  definePaginatedResponseSchema,
+  defineSuccessResponseSchema,
+} from '../lib/api-response.js';
 import { validateRequest } from '../middlewares/validate-request.js';
 import {
   camelCaseToTitleCase,
@@ -75,7 +80,10 @@ export class SmartRouter {
     const [path, schemas, ...middlewares] = args;
 
     const requestSchemas = schemas.request ?? {};
-    const responseSchema = defineResponseSchema(schemas.response);
+    const responseSchema =
+      schemas.response instanceof ZodArray
+        ? definePaginatedResponseSchema(schemas.response)
+        : defineSuccessResponseSchema(schemas.response);
 
     const handler = middlewares[middlewares.length - 1];
 

@@ -1,11 +1,14 @@
 import type { ForbiddenError } from '@casl/ability';
 import { RequestContext } from '@mikro-orm/core';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
 import { Settings } from 'luxon';
 import morgan from 'morgan';
+import path from 'path';
 import swaggerUI from 'swagger-ui-express';
+import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { env } from './config/env.js';
 import { db } from './database/database-client.js';
@@ -20,6 +23,7 @@ import { wishlistRouter } from './modules/wishlist/wishlist-controller.js';
 import {
   convertOpenAPIDocToYAML,
   generateOpenAPIDocumentation,
+  writeOpenAPIDocToDisk,
 } from './openapi/openapi-service.js';
 import type { Ability } from './types/casl.js';
 
@@ -46,6 +50,8 @@ export const bootstrapApplication = async () => {
 
   await db.orm.connect();
 
+  app.use(cors());
+
   if (env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
   }
@@ -66,6 +72,16 @@ export const bootstrapApplication = async () => {
 
   const openAPIDoc = generateOpenAPIDocumentation();
   const openAPIDocYAML = convertOpenAPIDocToYAML(openAPIDoc);
+  writeOpenAPIDocToDisk(openAPIDocYAML);
+
+  app.get('/docs/openapi-docs.yaml', (req, res) => {
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+    const pathToFile = path.join(__dirname, 'openapi', 'openapi-docs.yaml');
+
+    res.sendFile(pathToFile);
+  });
 
   app.use(
     '/docs',

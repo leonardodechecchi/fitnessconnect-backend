@@ -3,6 +3,8 @@ import {
   OpenAPIRegistry,
 } from '@asteasolutions/zod-to-openapi';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { env } from '../config/env.js';
 
@@ -29,6 +31,9 @@ export const convertOpenAPIDocToYAML = (
 };
 
 export const writeOpenAPIDocToDisk = (yamlDoc: string) => {
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = path.dirname(__filename);
+
   fs.writeFileSync(`${__dirname}/openapi-docs.yaml`, yamlDoc, {
     encoding: 'utf-8',
   });

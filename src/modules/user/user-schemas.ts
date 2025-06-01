@@ -12,7 +12,7 @@ export const userSchema = z.object({
   timezone: z.string(),
 });
 
-export const userArraySchema = z.array(userSchema);
+export const usersSchema = z.array(userSchema);
 
 export const userIdSchema = z.object({
   userId: z.string().uuid(),
