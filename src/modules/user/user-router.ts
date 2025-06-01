@@ -1,5 +1,5 @@
 import { SmartRouter } from '../../openapi/smart-router.js';
-import { paginationSchema } from '../common/common-schemas.js';
+import { paginationParamSchema } from '../common/common-schemas.js';
 import {
   deleteUserById,
   getUserById,
@@ -18,7 +18,7 @@ export const userRouter = new SmartRouter('/users');
 userRouter.get(
   '/',
   {
-    request: { query: paginationSchema },
+    request: { query: paginationParamSchema },
     response: usersSchema,
   },
   getUsers
