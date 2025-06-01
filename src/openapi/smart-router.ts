@@ -5,18 +5,17 @@ import {
   type Response,
 } from 'express';
 import {
-  z,
   ZodArray,
   ZodSchema,
   type AnyZodObject,
   type ZodEffects,
   type ZodTypeAny,
 } from 'zod';
-import {
-  definePaginatedResponseSchema,
-  defineSuccessResponseSchema,
-} from '../lib/api-response.js';
 import { validateRequest } from '../middlewares/validate-request.js';
+import {
+  defineSuccessPaginatedResponse,
+  defineSuccessResponse,
+} from '../modules/common/common-utils.js';
 import {
   camelCaseToTitleCase,
   expressToOpenAPIPath,
@@ -57,16 +56,6 @@ type IDontKnow = unknown | never | any;
 type RequestAny = Request<IDontKnow, IDontKnow, IDontKnow, IDontKnow>;
 type ResponseAny = Response<IDontKnow, Record<string, unknown>>;
 
-const defineResponseSchema = <T extends ZodTypeAny>(schema?: T) => {
-  return z.object({
-    success: z.literal(true),
-    message: z.string(),
-    data:
-      schema ??
-      z.record(z.string(), z.any()).openapi({ additionalProperties: false }),
-  });
-};
-
 export class SmartRouter {
   readonly router: Router;
   readonly rootPath: SmartPath;
@@ -82,8 +71,8 @@ export class SmartRouter {
     const requestSchemas = schemas.request ?? {};
     const responseSchema =
       schemas.response instanceof ZodArray
-        ? definePaginatedResponseSchema(schemas.response)
-        : defineSuccessResponseSchema(schemas.response);
+        ? defineSuccessPaginatedResponse(schemas.response)
+        : defineSuccessResponse(schemas.response);
 
     const handler = middlewares[middlewares.length - 1];
 

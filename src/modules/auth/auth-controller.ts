@@ -1,9 +1,6 @@
-import { Router, type Request, type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { db } from '../../database/database-client.js';
-import { ApiError } from '../../lib/api-error.js';
-import { ApiResponse } from '../../lib/api-response.js';
-import { authenticateRequest } from '../../middlewares/authenticate-request.js';
-import { validateRequest } from '../../middlewares/validate-request.js';
+import { ErrorCode, ResponseHandler } from '../../lib/response-handler.js';
 import { redis } from '../../services/redis.js';
 import {
   signAccessToken,
@@ -11,89 +8,51 @@ import {
   type JwtPayload,
 } from '../../utils/jwt.js';
 import { AUTH } from './auth-constants.js';
-import {
-  loginSchema,
-  registerSchema,
-  type LoginSchema,
-  type RegisterSchema,
-} from './auth-schemas.js';
+import { type LoginSchema, type RegisterSchema } from './auth-schemas.js';
 import { createAuthSession } from './auth-service.js';
-import { oauthRouter } from './oauth/oauth-controller.js';
-
-export const authRouter = Router();
 
 export const getMe = async (req: Request, res: Response) => {
-  throw new Error('Method not implemented');
+  const user = await db.users.findOneOrFail(req.userId);
+  return ResponseHandler.from(res).ok(user);
 };
 
-export const login = async (req: Request, res: Response) => {
-  throw new Error('Method not implemented');
+export const login = async (
+  req: Request<unknown, unknown, LoginSchema>,
+  res: Response
+) => {
+  const { email, password } = req.body;
+
+  const user = await db.users.findOne({ email }, { populate: ['password'] });
+
+  if (!user || !user.password || !(await user.verifyPassword(password))) {
+    return ResponseHandler.from(res).unauthorized(
+      ErrorCode.InvalidCredentials,
+      'Invalid email or password'
+    );
+  }
+
+  createAuthSession(res, user);
+
+  return ResponseHandler.from(res).noData('Login successful');
 };
 
-export const register = async (req: Request, res: Response) => {
-  throw new Error('Method not implemented');
+export const register = async (
+  req: Request<unknown, unknown, RegisterSchema>,
+  res: Response
+) => {
+  const { email } = req.body;
+
+  if ((await db.users.count({ email })) > 0) {
+    return ResponseHandler.from(res).conflict(ErrorCode.Conflict);
+  }
+
+  const user = db.users.create(req.body);
+  await db.em.flush();
+
+  return ResponseHandler.from(res).ok(user, 'Registration successful');
 };
 
 export const logout = async (req: Request, res: Response) => {
-  throw new Error('Method not implemented');
-};
-
-export const refresh = async (req: Request, res: Response) => {
-  throw new Error('Method not implemented');
-};
-
-authRouter.get(
-  '/me',
-  authenticateRequest,
-  async (req: Request, res: Response) => {
-    const user = await db.users.findOneOrFail(req.userId);
-
-    res.json(ApiResponse.ok(user));
-  }
-);
-
-authRouter.post(
-  '/login',
-  validateRequest({ body: loginSchema }),
-  async (req: Request<unknown, unknown, LoginSchema>, res: Response) => {
-    const { email, password } = req.body;
-
-    const user = await db.users.findOne({ email }, { populate: ['password'] });
-
-    if (!user || !user.password || !(await user.verifyPassword(password))) {
-      throw ApiError.unauthorized('Invalid credentials');
-    }
-
-    if (user.isBanned()) {
-      throw ApiError.forbidden('Your account has been banned');
-    }
-
-    createAuthSession(res, user);
-
-    res.json(ApiResponse.noContent('Login successfull'));
-  }
-);
-
-authRouter.post(
-  '/register',
-  validateRequest({ body: registerSchema }),
-  async (req: Request<unknown, unknown, RegisterSchema>, res: Response) => {
-    const { email } = req.body;
-
-    const userCount = await db.users.count({ email });
-    if (userCount > 0) {
-      throw ApiError.conflict('Email not available');
-    }
-
-    const user = db.users.create(req.body);
-
-    await db.em.flush();
-
-    res.json(ApiResponse.created(user, 'Registration successfull'));
-  }
-);
-
-authRouter.post('/logout', async (req: Request, res: Response) => {
   const { [AUTH.REFRESH_TOKEN_COOKIE_NAME]: refreshToken } = req.cookies;
 
   const { exp } = verifyRefreshToken(refreshToken);
@@ -108,19 +67,19 @@ authRouter.post('/logout', async (req: Request, res: Response) => {
   res.clearCookie(AUTH.ACCESS_TOKEN_COOKIE_NAME, AUTH.COOKIE_OPTIONS);
   res.clearCookie(AUTH.REFRESH_TOKEN_COOKIE_NAME, AUTH.COOKIE_OPTIONS);
 
-  res.json(ApiResponse.noContent());
-});
+  return ResponseHandler.from(res).noData();
+};
 
-authRouter.post('/refresh', async (req: Request, res: Response) => {
+export const refresh = async (req: Request, res: Response) => {
   const { [AUTH.REFRESH_TOKEN_COOKIE_NAME]: refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    throw ApiError.unauthorized('Refresh token not provided');
+    return ResponseHandler.from(res).unauthorized(ErrorCode.TokenNotFound);
   }
 
   const isBlacklisted = await redis.get('blacklist', refreshToken);
   if (isBlacklisted) {
-    throw ApiError.forbidden('Refresh token rejected');
+    return ResponseHandler.from(res).unauthorized(ErrorCode.TokenBlacklisted);
   }
 
   const { userId, userFullName } = verifyRefreshToken(refreshToken);
@@ -134,7 +93,5 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
 
   res.cookie(AUTH.ACCESS_TOKEN_COOKIE_NAME, accessToken, AUTH.COOKIE_OPTIONS);
 
-  res.json(ApiResponse.noContent());
-});
-
-authRouter.use('/oauth', oauthRouter);
+  return ResponseHandler.from(res).noData();
+};
