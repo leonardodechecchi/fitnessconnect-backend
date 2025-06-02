@@ -1,11 +1,21 @@
 import { ForbiddenError } from '@casl/ability';
-import type { RequestHandler } from 'express';
+import type { Request, RequestHandler, Response } from 'express';
 import { Interval } from 'luxon';
 import { db } from '../../../../database/database-client.js';
 import { ApiError } from '../../../../lib/api-error.js';
 import { ApiResponse } from '../../../../lib/api-response.js';
 import type { TrainerIdSchema } from '../trainer-schemas.js';
 import type { CreateAvailabilitySchema } from './availability-schemas.js';
+
+export const getTrainerAvailabilities = async (
+  req: Request,
+  res: Response
+) => {};
+
+export const createTrainerAvailability = async (
+  req: Request,
+  res: Response
+) => {};
 
 export const getAvailabilities: RequestHandler<TrainerIdSchema> = async (
   req,
@@ -76,6 +86,7 @@ export const createAvailability: RequestHandler<
   const response = ApiResponse.created(availability);
   res.status(response.code).json(response);
 };
+
 function timeToDateTime(startTime: string): import('luxon').DateInput {
   throw new Error('Function not implemented.');
 }

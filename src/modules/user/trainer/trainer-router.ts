@@ -20,6 +20,7 @@ trainerRouter.get(
     request: { query: paginationParamSchema },
     response: trainersSchema,
   },
+  authenticate,
   getTrainers
 );
 

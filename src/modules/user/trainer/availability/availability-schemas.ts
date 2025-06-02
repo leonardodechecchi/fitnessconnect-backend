@@ -1,6 +1,13 @@
 import { z } from 'zod';
 import { timeToDateTime } from '../../../../utils/date.js';
 
+export const availabilitySchema = z.object({
+  id: z.string(),
+  dayOfWeek: z.number(),
+  startTime: z.string(),
+  endTime: z.string(),
+});
+
 export const availabilityIdSchema = z.object({
   availabilityId: z.string().uuid(),
 });
