@@ -1,5 +1,12 @@
 import { z } from 'zod';
 
+export const specialtySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
+
+export const specialtiesSchema = z.array(specialtySchema);
+
 export const specialtyIdSchema = z.object({
   specialtyId: z.string().uuid(),
 });

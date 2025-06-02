@@ -1,55 +1,56 @@
-import { ForbiddenError } from '@casl/ability';
-import { type RequestHandler } from 'express';
+import type { Request, Response } from 'express';
 import { db } from '../../database/database-client.js';
-import { ApiError } from '../../lib/api-error.js';
-import { ApiResponse } from '../../lib/api-response.js';
-import { Specialty } from './specialty-entity.js';
-import {
-  type CreateSpecialtySchema,
-  type SpecialtyIdSchema,
+import { ErrorCode, ResponseHandler } from '../../lib/response-handler.js';
+import type { PaginationParamSchema } from '../common/common-schemas.js';
+import type {
+  CreateSpecialtySchema,
+  SpecialtyIdSchema,
 } from './specialty-schemas.js';
 
-export const getSpecialties: RequestHandler = async (req, res) => {
-  ForbiddenError.from(req.ability).throwUnlessCan('read', Specialty);
+export const getSpecialties = async (
+  req: Request<unknown, unknown, unknown, PaginationParamSchema>,
+  res: Response
+) => {
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
 
-  const specialties = await db.specialties.findAll();
+  const [specialties, totalItems] = await db.specialties.findAndCount(
+    {},
+    { offset: (page - 1) * limit, limit }
+  );
 
-  res.json(ApiResponse.ok(specialties));
+  return ResponseHandler.from(res).paginated(specialties, {
+    page,
+    limit,
+    totalItems,
+  });
 };
 
-export const createSpecialty: RequestHandler<
-  unknown,
-  unknown,
-  CreateSpecialtySchema
-> = async (req, res) => {
+export const createSpecialty = async (
+  req: Request<unknown, unknown, CreateSpecialtySchema>,
+  res: Response
+) => {
   const { name } = req.body;
 
-  ForbiddenError.from(req.ability).throwUnlessCan('create', Specialty);
-
-  const count = await db.specialties.count({ name });
-  if (count > 0) {
-    throw ApiError.conflict(`"${name}" specialty already exists`);
+  if ((await db.specialties.count({ name })) > 0) {
+    return ResponseHandler.from(res).conflict(
+      ErrorCode.Conflict,
+      `"${name}" specialty already exists`
+    );
   }
 
   const specialty = db.specialties.create(req.body);
-
   await db.em.flush();
 
-  const response = ApiResponse.created(specialty);
-  res.status(response.code).json(response);
+  return ResponseHandler.from(res).created(specialty);
 };
 
-export const deleteSpecialty: RequestHandler<SpecialtyIdSchema> = async (
-  req,
-  res
+export const deleteSpecialty = async (
+  req: Request<SpecialtyIdSchema>,
+  res: Response
 ) => {
-  const { specialtyId } = req.params;
-
-  ForbiddenError.from(req.ability).throwUnlessCan('delete', Specialty);
-
-  const specialty = await db.specialties.findOneOrFail(specialtyId);
-
+  const specialty = await db.specialties.findOneOrFail(req.params.specialtyId);
   await db.em.removeAndFlush(specialty);
 
-  res.json(ApiResponse.ok(specialty));
+  return ResponseHandler.from(res).ok(specialty);
 };

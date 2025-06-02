@@ -1,6 +1,6 @@
-import { Router } from 'express';
-import { authenticateRequest } from '../../middlewares/authenticate-request.js';
-import { validateRequest } from '../../middlewares/validate-request.js';
+import { authenticate } from '../../middlewares/authenticate-request.js';
+import { SmartRouter } from '../../openapi/smart-router.js';
+import { paginationParamSchema } from '../common/common-schemas.js';
 import {
   createSpecialty,
   deleteSpecialty,
@@ -8,23 +8,39 @@ import {
 } from './specialty-controller.js';
 import {
   createSpecialtySchema,
+  specialtiesSchema,
   specialtyIdSchema,
+  specialtySchema,
 } from './specialty-schemas.js';
 
-export const specialtyRouter = Router();
+export const specialtyRouter = new SmartRouter('/specialties');
 
-specialtyRouter.get('/', authenticateRequest, getSpecialties);
+specialtyRouter.get(
+  '/',
+  {
+    request: { query: paginationParamSchema },
+    response: specialtiesSchema,
+  },
+  authenticate,
+  getSpecialties
+);
 
 specialtyRouter.post(
   '/',
-  validateRequest({ body: createSpecialtySchema }),
-  authenticateRequest,
+  {
+    request: { body: createSpecialtySchema },
+    response: specialtySchema,
+  },
+  authenticate,
   createSpecialty
 );
 
 specialtyRouter.delete(
   '/:specialtyId',
-  validateRequest({ params: specialtyIdSchema }),
-  authenticateRequest,
+  {
+    request: { params: specialtyIdSchema },
+    response: specialtySchema,
+  },
+  authenticate,
   deleteSpecialty
 );
