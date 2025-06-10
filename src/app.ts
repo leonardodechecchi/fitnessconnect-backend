@@ -68,8 +68,6 @@ export const bootstrapApplication = async () => {
   app.use(userRouter.rootPath, userRouter.router);
   app.use(trainerRouter.rootPath, trainerRouter.router);
   app.use(specialtyRouter.rootPath, specialtyRouter.router);
-  // app.use('/wishlists', wishlistRouter);
-  // app.use('/qa', qaRouter);
 
   const openAPIDoc = generateOpenAPIDocumentation();
   const openAPIDocYAML = convertOpenAPIDocToYAML(openAPIDoc);
