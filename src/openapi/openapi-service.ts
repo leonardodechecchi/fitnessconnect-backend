@@ -8,10 +8,10 @@ import { fileURLToPath } from 'url';
 import yaml from 'yaml';
 import { env } from '../config/env.js';
 
-export const registry = new OpenAPIRegistry();
+export const openAPIRegistry = new OpenAPIRegistry();
 
 export const generateOpenAPIDocumentation = () => {
-  const generator = new OpenApiGeneratorV3(registry.definitions);
+  const generator = new OpenApiGeneratorV3(openAPIRegistry.definitions);
 
   return generator.generateDocument({
     openapi: '3.0.0',
