@@ -17,7 +17,7 @@ import {
   defineSuccessPaginatedResponse,
   defineSuccessResponse,
 } from '../modules/common/common-utils.js';
-import { registry } from './openapi-service.js';
+import { openAPIRegistry } from './openapi-service.js';
 
 type ZodObjectWithEffect =
   | AnyZodObject
@@ -113,10 +113,10 @@ export class SmartRouter {
     const title = this.camelCaseToTitleCase(handler.name);
 
     if (requestSchemas.body) {
-      registry.register(`${title} Input`, requestSchemas.body);
+      openAPIRegistry.register(`${title} Input`, requestSchemas.body);
     }
 
-    registry.registerPath({
+    openAPIRegistry.registerPath({
       method,
       path: openAPIPath,
       tags: [entityName],
