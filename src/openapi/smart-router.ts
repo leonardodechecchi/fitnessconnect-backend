@@ -4,6 +4,7 @@ import {
   type Request,
   type Response,
 } from 'express';
+import pluralize from 'pluralize';
 import {
   ZodArray,
   ZodSchema,
@@ -16,11 +17,6 @@ import {
   defineSuccessPaginatedResponse,
   defineSuccessResponse,
 } from '../modules/common/common-utils.js';
-import {
-  camelCaseToTitleCase,
-  expressToOpenAPIPath,
-  routeToClassName,
-} from '../utils/openapi.js';
 import { registry } from './openapi-service.js';
 
 type ZodObjectWithEffect =
@@ -52,6 +48,10 @@ type SmartMiddleware = (
   next: NextFunction
 ) => any | Promise<any>;
 
+type SmartRouterOptions = {
+  mergeParams?: boolean;
+};
+
 type IDontKnow = unknown | never | any;
 type RequestAny = Request<IDontKnow, IDontKnow, IDontKnow, IDontKnow>;
 type ResponseAny = Response<IDontKnow, Record<string, unknown>>;
@@ -65,6 +65,37 @@ export class SmartRouter {
     this.rootPath = rootPath;
   }
 
+  // Converte un percorso Express con parametri (es. /user/:id) in formato OpenAPI (/user/{id})
+  // Esempio: "/user/:id/orders/:orderId" → "/user/{id}/orders/{orderId}"
+  private expressToOpenAPIPath(route: string): string {
+    return route.replace(/\/:(\w+)/g, '/{$1}');
+  }
+
+  /**
+   * Converte un percorso (es. /users/) in un nome di classe in PascalCase al singolare
+   * Esempio: "/users/" → "User"
+   */
+  private routeToClassName(): string {
+    const route = this.rootPath;
+
+    const cleanedRoute = route.replace(/^\/|\/$/g, '').toLocaleLowerCase();
+    const singular = pluralize.singular(cleanedRoute);
+    return singular.charAt(0).toUpperCase() + singular.slice(1);
+  }
+
+  /**
+   * Converte una stringa in camelCase in Title Case separato da spazi
+   * Esempio: "userName" → "User Name"
+   */
+  private camelCaseToTitleCase(input: string): string {
+    let titleCase = input
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, (str) => str.toUpperCase())
+      .trim();
+
+    return titleCase;
+  }
+
   private wrapper(method: SmartMethod, ...args: SmartRouteParameters) {
     const [path, schemas, ...middlewares] = args;
 
@@ -75,10 +106,11 @@ export class SmartRouter {
         : defineSuccessResponse(schemas.response);
 
     const handler = middlewares[middlewares.length - 1];
+    if (!handler) throw new Error('Router handler not provided');
 
-    const openAPIPath = this.rootPath + expressToOpenAPIPath(path);
-    const entityName = routeToClassName(this.rootPath);
-    const title = camelCaseToTitleCase(handler?.name);
+    const openAPIPath = this.expressToOpenAPIPath(this.rootPath + path);
+    const entityName = this.routeToClassName();
+    const title = this.camelCaseToTitleCase(handler.name);
 
     if (requestSchemas.body) {
       registry.register(`${title} Input`, requestSchemas.body);

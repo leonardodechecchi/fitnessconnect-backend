@@ -1,25 +1,17 @@
-import { ForbiddenError } from '@casl/ability';
-import type { Request, RequestHandler, Response } from 'express';
+import type { Request, Response } from 'express';
 import { Interval } from 'luxon';
 import { db } from '../../../../database/database-client.js';
-import { ApiError } from '../../../../lib/api-error.js';
-import { ApiResponse } from '../../../../lib/api-response.js';
+import {
+  ErrorCode,
+  ResponseHandler,
+} from '../../../../lib/response-handler.js';
+import { timeToDateTime } from '../../../../utils/date.js';
 import type { TrainerIdSchema } from '../trainer-schemas.js';
 import type { CreateAvailabilitySchema } from './availability-schemas.js';
 
 export const getTrainerAvailabilities = async (
-  req: Request,
+  req: Request<TrainerIdSchema>,
   res: Response
-) => {};
-
-export const createTrainerAvailability = async (
-  req: Request,
-  res: Response
-) => {};
-
-export const getAvailabilities: RequestHandler<TrainerIdSchema> = async (
-  req,
-  res
 ) => {
   const { trainerId } = req.params;
 
@@ -27,20 +19,13 @@ export const getAvailabilities: RequestHandler<TrainerIdSchema> = async (
     populate: ['availabilities'],
   });
 
-  const forbidden = ForbiddenError.from(req.ability);
-
-  Object.keys(trainer).forEach((field) =>
-    forbidden.throwUnlessCan('read', trainer, field)
-  );
-
-  res.json(ApiResponse.ok(trainer.availabilities.getItems()));
+  return ResponseHandler.from(res).ok(trainer.availabilities.getItems());
 };
 
-export const createAvailability: RequestHandler<
-  TrainerIdSchema,
-  unknown,
-  CreateAvailabilitySchema
-> = async (req, res) => {
+export const createTrainerAvailability = async (
+  req: Request<TrainerIdSchema, unknown, CreateAvailabilitySchema>,
+  res: Response
+) => {
   const { trainerId } = req.params;
   const { dayOfWeek, startTime, endTime } = req.body;
 
@@ -54,7 +39,8 @@ export const createAvailability: RequestHandler<
   });
 
   if (trainer.availabilities.count() >= 5) {
-    throw ApiError.badRequest(
+    return ResponseHandler.from(res).badRequest(
+      ErrorCode.AccessDenied, // TODO: change
       'You cannot create more than 5 availabilities for the same day'
     );
   }
@@ -72,21 +58,15 @@ export const createAvailability: RequestHandler<
     );
 
     if (interval.overlaps(other)) {
-      throw ApiError.badRequest(
+      return ResponseHandler.from(res).badRequest(
+        ErrorCode.AccessDenied, // TODO: change
         'The availability overlaps with an existing one'
       );
     }
   }
 
   const availability = db.availabilities.create({ ...req.body, trainer });
-  ForbiddenError.from(req.ability).throwUnlessCan('create', availability);
-
   await db.em.flush();
 
-  const response = ApiResponse.created(availability);
-  res.status(response.code).json(response);
+  return ResponseHandler.from(res).created(availability);
 };
-
-function timeToDateTime(startTime: string): import('luxon').DateInput {
-  throw new Error('Function not implemented.');
-}

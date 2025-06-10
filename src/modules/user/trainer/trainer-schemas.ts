@@ -1,4 +1,4 @@
-import type { DateTime } from 'luxon';
+import { DateTime } from 'luxon';
 import { z } from 'zod';
 import { userSchema } from '../user-schemas.js';
 
@@ -14,15 +14,17 @@ export const trainerIdSchema = z.object({
   trainerId: z.string().uuid(),
 });
 
-export const getTrainerSlotSchema = z.object({
-  date: z.string().date(),
+export const trainerSlotsQueryParams = z.object({
+  date: z.string().date().openapi({ example: DateTime.now().toISODate() }),
 });
 
 export const slotSchema = z.object({
-  start: z.custom<DateTime>(),
-  end: z.custom<DateTime>(),
+  start: z.string(),
+  end: z.string(),
 });
 
+export const slotArraySchema = z.array(slotSchema);
+
 export type TrainerIdSchema = z.infer<typeof trainerIdSchema>;
-export type GetTrainerSlotsSchema = z.infer<typeof getTrainerSlotSchema>;
 export type SlotSchema = z.infer<typeof slotSchema>;
+export type TrainerSlotsQueryParams = z.infer<typeof trainerSlotsQueryParams>;

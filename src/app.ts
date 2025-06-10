@@ -15,11 +15,9 @@ import { db } from './database/database-client.js';
 import { logger } from './lib/logger.js';
 import { errorHandler } from './middlewares/error-handler.js';
 import { authRouter } from './modules/auth/auth-router.js';
-import { qaRouter } from './modules/qa/qa-router.js';
 import { specialtyRouter } from './modules/specialty/specialty-router.js';
 import { trainerRouter } from './modules/user/trainer/trainer-router.js';
 import { userRouter } from './modules/user/user-router.js';
-import { wishlistRouter } from './modules/wishlist/wishlist-controller.js';
 import {
   convertOpenAPIDocToYAML,
   generateOpenAPIDocumentation,
@@ -50,7 +48,12 @@ export const bootstrapApplication = async () => {
 
   await db.orm.connect();
 
-  app.use(cors());
+  app.use(
+    cors({
+      origin: env.CLIENT_SIDE_URL,
+      credentials: true,
+    })
+  );
 
   if (env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
@@ -65,14 +68,14 @@ export const bootstrapApplication = async () => {
   app.use(userRouter.rootPath, userRouter.router);
   app.use(trainerRouter.rootPath, trainerRouter.router);
   app.use(specialtyRouter.rootPath, specialtyRouter.router);
-  app.use('/wishlists', wishlistRouter);
-  app.use('/qa', qaRouter);
+  // app.use('/wishlists', wishlistRouter);
+  // app.use('/qa', qaRouter);
 
   const openAPIDoc = generateOpenAPIDocumentation();
   const openAPIDocYAML = convertOpenAPIDocToYAML(openAPIDoc);
   writeOpenAPIDocToDisk(openAPIDocYAML);
 
-  app.get('/docs/openapi-docs.yaml', (req, res) => {
+  app.get('/docs/openapi-docs.yaml', (_, res) => {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
 

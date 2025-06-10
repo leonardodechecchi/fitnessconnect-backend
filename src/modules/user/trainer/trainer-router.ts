@@ -2,13 +2,24 @@ import { authenticate } from '../../../middlewares/authenticate-request.js';
 import { SmartRouter } from '../../../openapi/smart-router.js';
 import { paginationParamSchema } from '../../common/common-schemas.js';
 import {
+  createTrainerAvailability,
+  getTrainerAvailabilities,
+} from './availability/availability-controller.js';
+import {
+  availabilitiesSchema,
+  availabilitySchema,
+  createAvailabilitySchema,
+} from './availability/availability-schemas.js';
+import {
   getTrainerById,
   getTrainers,
   getTrainerSlots,
 } from './trainer-controller.js';
 import {
+  slotArraySchema,
   trainerIdSchema,
   trainerSchema,
+  trainerSlotsQueryParams,
   trainersSchema,
 } from './trainer-schemas.js';
 
@@ -37,27 +48,33 @@ trainerRouter.get(
 trainerRouter.get(
   '/:trainerId/slots',
   {
-    request: { params: trainerIdSchema },
+    request: {
+      params: trainerIdSchema,
+      query: trainerSlotsQueryParams,
+    },
+    response: slotArraySchema,
   },
   authenticate,
   getTrainerSlots
 );
 
-// trainerRouter.get(
-//   '/:trainerId/slots',
-//   validateRequest({ params: trainerIdSchema, query: getTrainerSlotSchema }),
-//   authenticateRequest,
-//   getTrainerSlots
-// );
+trainerRouter.get(
+  '/:trainerId/availabilities',
+  {
+    request: { params: trainerIdSchema },
+    response: availabilitiesSchema,
+  },
+  getTrainerAvailabilities
+);
 
-// trainerRouter.use(
-//   '/:trainerId/availabilities',
-//   validateRequest({ params: trainerIdSchema }),
-//   availabilityRouter
-// );
-
-// trainerRouter.use(
-//   '/:trainerId/exceptions',
-//   validateRequest({ params: trainerIdSchema }),
-//   exceptionRouter
-// );
+trainerRouter.post(
+  '/:trainerId/availabilities',
+  {
+    request: {
+      params: trainerIdSchema,
+      body: createAvailabilitySchema,
+    },
+    response: availabilitySchema,
+  },
+  createTrainerAvailability
+);
