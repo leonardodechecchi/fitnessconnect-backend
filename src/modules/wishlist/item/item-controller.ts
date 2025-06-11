@@ -14,6 +14,26 @@ import {
 
 export const itemRouter = Router({ mergeParams: true });
 
+export const createWishlistItem = async (
+  req: Request<WishlistIdSchema>,
+  res: Response
+) => {};
+
+export const getWishlistItems = async (
+  req: Request<WishlistIdSchema>,
+  res: Response
+) => {};
+
+export const getWishlistItemById = async (
+  req: Request<WishlistIdSchema & ItemIdSchema>,
+  res: Response
+) => {};
+
+export const deleteWishlistItemById = async (
+  req: Request<WishlistIdSchema & ItemIdSchema>,
+  res: Response
+) => {};
+
 itemRouter.post(
   '/',
   validateRequest({ body: createItemSchema }),
