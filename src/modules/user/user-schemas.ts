@@ -2,7 +2,17 @@ import { DateTime } from 'luxon';
 import { z } from 'zod';
 import { UserStatus } from './user-entity.js';
 
-export const userSchema = z.object({
+export interface UserShape {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  profilePictureUrl?: string;
+  timezone: string;
+}
+
+export const userSchema: z.ZodSchema<UserShape> = z.object({
   id: z.string(),
   firstName: z.string(),
   lastName: z.string(),

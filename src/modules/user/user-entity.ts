@@ -13,6 +13,7 @@ import {
 import { hash, verify } from 'argon2';
 import { Admin } from './admin/admin-entity.js';
 import { Trainer } from './trainer/trainer-entity.js';
+import type { UserShape } from './user-schemas.js';
 
 export enum UserStatus {
   ACTIVE = 'active',
@@ -21,7 +22,7 @@ export enum UserStatus {
 }
 
 @Entity()
-export class User {
+export class User implements UserShape {
   [OptionalProps]?: 'fullName' | 'role' | 'status';
   [HiddenProps]?: 'password' | 'status' | 'role' | 'trainer' | 'admin';
 
