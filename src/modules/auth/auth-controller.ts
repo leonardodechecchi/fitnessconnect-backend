@@ -4,12 +4,19 @@ import { ErrorCode, ResponseHandler } from '../../lib/response-handler.js';
 import { redis } from '../../services/redis.js';
 import {
   signAccessToken,
+  verifyAccessToken,
   verifyRefreshToken,
   type JwtPayload,
 } from '../../utils/jwt.js';
 import { AUTH } from './auth-constants.js';
 import { type LoginSchema, type RegisterSchema } from './auth-schemas.js';
 import { createAuthSession } from './auth-service.js';
+
+export const checkAuth = (req: Request, res: Response) => {
+  const { [AUTH.ACCESS_TOKEN_COOKIE_NAME]: accessToken } = req.cookies;
+  const isAuthenticated = verifyAccessToken(accessToken);
+  return ResponseHandler.from(res).ok(!!isAuthenticated);
+};
 
 export const getMe = async (req: Request, res: Response) => {
   const user = await db.users.findOneOrFail(req.userId);
