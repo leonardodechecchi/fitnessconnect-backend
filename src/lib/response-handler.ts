@@ -1,5 +1,6 @@
 import { HttpStatusCode } from 'axios';
 import type { Response } from 'express';
+import type { ResponseExtended } from '../middlewares/validare-response.js';
 import type {
   ErrorResponseSchema,
   PaginationSchema,
@@ -144,9 +145,9 @@ export enum ErrorCode {
 }
 
 export class ResponseHandler {
-  #response: Response;
+  #response: Response | ResponseExtended;
 
-  private constructor(response: Response) {
+  private constructor(response: Response | ResponseExtended) {
     this.#response = response;
   }
 
@@ -170,7 +171,9 @@ export class ResponseHandler {
       timestamp: new Date().toISOString(),
     };
 
-    return this.#response.status(HttpStatusCode.Ok).json(payload);
+    return 'jsonValidate' in this.#response
+      ? this.#response.status(HttpStatusCode.Ok).jsonValidate(payload)
+      : this.#response.status(HttpStatusCode.Ok).json(payload);
   }
 
   paginated<T>(

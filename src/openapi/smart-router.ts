@@ -12,6 +12,8 @@ import {
   type ZodEffects,
   type ZodTypeAny,
 } from 'zod';
+import { env } from '../config/env.js';
+import { validateResponse } from '../middlewares/validare-response.js';
 import { validateRequest } from '../middlewares/validate-request.js';
 import {
   defineSuccessPaginatedResponse,
@@ -47,10 +49,6 @@ type SmartMiddleware = (
   res: ResponseAny,
   next: NextFunction
 ) => any | Promise<any>;
-
-type SmartRouterOptions = {
-  mergeParams?: boolean;
-};
 
 type IDontKnow = unknown | never | any;
 type RequestAny = Request<IDontKnow, IDontKnow, IDontKnow, IDontKnow>;
@@ -147,13 +145,20 @@ export class SmartRouter {
       },
     });
 
-    Object.keys(requestSchemas).length > 0
-      ? this.router[method](
-          path,
-          validateRequest(requestSchemas),
-          ...middlewares
-        )
-      : this.router[method](path, ...middlewares);
+    if (env.NODE_ENV === 'development') {
+      this.router[method](
+        path,
+        validateRequest(requestSchemas),
+        validateResponse(responseSchema),
+        ...middlewares
+      );
+    } else {
+      this.router[method](
+        path,
+        validateRequest(requestSchemas),
+        ...middlewares
+      );
+    }
   }
 
   use(...middlewares: SmartMiddleware[]) {
