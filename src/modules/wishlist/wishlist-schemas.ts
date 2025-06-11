@@ -1,5 +1,13 @@
 import { z } from 'zod';
 
+export const wishlistSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  owner: z.string(),
+});
+
+export const wishlistsSchema = z.array(wishlistSchema);
+
 export const wishlistIdSchema = z.object({
   wishlistId: z.string().uuid(),
 });

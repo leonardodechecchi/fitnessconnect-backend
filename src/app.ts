@@ -18,6 +18,7 @@ import { authRouter } from './modules/auth/auth-router.js';
 import { specialtyRouter } from './modules/specialty/specialty-router.js';
 import { trainerRouter } from './modules/user/trainer/trainer-router.js';
 import { userRouter } from './modules/user/user-router.js';
+import { wishlistRouter } from './modules/wishlist/wishlist-router.js';
 import {
   convertOpenAPIDocToYAML,
   generateOpenAPIDocumentation,
@@ -68,6 +69,7 @@ export const bootstrapApplication = async () => {
   app.use(userRouter.rootPath, userRouter.router);
   app.use(trainerRouter.rootPath, trainerRouter.router);
   app.use(specialtyRouter.rootPath, specialtyRouter.router);
+  app.use(wishlistRouter.rootPath, wishlistRouter.router);
 
   const openAPIDoc = generateOpenAPIDocumentation();
   const openAPIDocYAML = convertOpenAPIDocToYAML(openAPIDoc);
