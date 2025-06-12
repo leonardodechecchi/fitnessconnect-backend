@@ -15,7 +15,14 @@ export const authRouter = new SmartRouter('/auth');
 
 authRouter.get('/', {}, checkAuth);
 
-authRouter.get('/me', { response: userSchema }, authenticate, getMe);
+authRouter.get(
+  '/me',
+  {
+    response: userSchema,
+  },
+  authenticate,
+  getMe
+);
 
 authRouter.post(
   '/login',

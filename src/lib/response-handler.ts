@@ -272,4 +272,20 @@ export class ResponseHandler {
 
     return this.#response.status(HttpStatusCode.Conflict).json(payload);
   }
+
+  customError(
+    statusCode: number,
+    code: ErrorCode,
+    message: string,
+    details?: unknown
+  ) {
+    const payload: ErrorResponseSchema = {
+      code,
+      message,
+      details,
+      timestamp: new Date().toISOString(),
+    };
+
+    return this.#response.status(statusCode).json(payload);
+  }
 }

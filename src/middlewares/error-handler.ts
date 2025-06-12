@@ -2,6 +2,7 @@ import { ForbiddenError } from '@casl/ability';
 import type { ErrorRequestHandler } from 'express';
 import { ApiError } from '../lib/api-error.js';
 import { logger } from '../lib/logger.js';
+import { ErrorCode, ResponseHandler } from '../lib/response-handler.js';
 
 export const errorHandler: ErrorRequestHandler = (err, _, res, next): any => {
   if (res.headersSent) {
@@ -9,12 +10,18 @@ export const errorHandler: ErrorRequestHandler = (err, _, res, next): any => {
   }
 
   if (err instanceof ApiError) {
-    return res.status(err.code).json(err);
+    return ResponseHandler.from(res).customError(
+      err.code,
+      ErrorCode.InternalError,
+      err.message
+    );
   }
 
   if (err instanceof ForbiddenError) {
-    const forbiddenError = ApiError.forbidden(err.message);
-    return res.status(forbiddenError.code).json(forbiddenError);
+    return ResponseHandler.from(res).forbidden(
+      ErrorCode.OperationNotAllowed,
+      err.message
+    );
   }
 
   logger.error(err);
