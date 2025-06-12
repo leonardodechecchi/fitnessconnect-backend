@@ -2,7 +2,6 @@ import { ForbiddenError } from '@casl/ability';
 import { Router, type Request, type Response } from 'express';
 import { db } from '../../../database/database-client.js';
 import { ApiResponse } from '../../../lib/api-response.js';
-import { authenticateRequest } from '../../../middlewares/authenticate-request.js';
 import { validateRequest } from '../../../middlewares/validate-request.js';
 import type { WishlistIdSchema } from '../wishlist-schemas.js';
 import {
@@ -37,7 +36,6 @@ export const deleteWishlistItemById = async (
 itemRouter.post(
   '/',
   validateRequest({ body: createItemSchema }),
-  authenticateRequest,
   async (
     req: Request<WishlistIdSchema, unknown, CreateItemSchema>,
     res: Response
@@ -66,7 +64,6 @@ itemRouter.post(
 itemRouter.get(
   '/:itemId',
   validateRequest({ params: itemIdSchema }),
-  authenticateRequest,
   async (req: Request<WishlistIdSchema & ItemIdSchema>, res: Response) => {
     const { wishlistId, itemId } = req.params;
 
@@ -86,7 +83,6 @@ itemRouter.get(
 itemRouter.delete(
   '/:itemId',
   validateRequest({ params: itemIdSchema }),
-  authenticateRequest,
   async (req: Request<WishlistIdSchema & ItemIdSchema>, res: Response) => {
     const { wishlistId, itemId } = req.params;
 
