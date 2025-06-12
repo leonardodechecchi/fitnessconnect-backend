@@ -10,138 +10,36 @@ import type {
 } from '../modules/common/common-schemas.js';
 
 export enum ErrorCode {
-  // --- Errori di Input e Validazione ---
-  /**
-   * Errore generico di validazione.
-   * I dettagli specifici dovrebbero essere nel campo 'details' della risposta di errore.
-   */
-  ValidationFailed = 'ValidationFailed',
-  /**
-   * Uno o più campi obbligatori non sono stati forniti.
-   */
-  RequiredFieldMissing = 'RequiredFieldMissing',
-  /**
-   * Il formato di un campo non è valido (es. email, URL, data, numero).
-   */
-  InvalidFormat = 'InvalidFormat',
-  /**
-   * Un valore fornito è fuori dall'intervallo consentito (es. numero troppo grande/piccolo, stringa troppo lunga/corta).
-   */
-  ValueOutOfRange = 'ValueOutOfRange',
-  /**
-   * Input generico non valido, quando le altre categorie non si applicano perfettamente.
-   */
-  InvalidInput = 'InvalidInput',
+  NOT_FOUND = 'NOT_FOUND',
+  CONFLICT = 'CONFLICT',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+  INTERNAL_SERVER = 'INTERNAL_SERVER',
+  INVALID_TOKEN = 'INVALID_TOKEN',
+  TOKEN_NOT_FOUND = 'TOKEN_NOT_FOUND',
+  TOKEN_EXPIRED = 'TOKEN_EXPIRED',
+  INVALID_INPUT = 'INVALID_INPUT',
+}
 
-  // --- Errori di Autenticazione e Autorizzazione ---
-  /**
-   * Credenziali fornite (es. username/password) non valide.
-   */
-  InvalidCredentials = 'InvalidCredentials',
-  /**
-   * Token di autenticazione mancante, non valido o malformato.
-   */
-  AuthenticationTokenError = 'AuthenticationTokenError',
-  /**
-   * Token di autenticazione scaduto.
-   */
-  TokenExpired = 'TokenExpired',
-  /**
-   * L'utente è autenticato ma non ha i permessi necessari per accedere alla risorsa o eseguire l'azione.
-   */
-  TokenNotFound = 'TokenNotFound',
-  AccessDenied = 'AccessDenied', // Equivalente a Forbidden,
-  TokenBlacklisted = 'TokenBlacklisted',
-  /**
-   * L'account utente è bloccato.
-   */
-  AccountLocked = 'AccountLocked',
-  /**
-   * L'account utente è sospeso.
-   */
-  AccountSuspended = 'AccountSuspended',
-  /**
-   * L'account utente non è stato ancora verificato (es. tramite email).
-   */
-  AccountNotVerified = 'AccountNotVerified',
+export class CustomError extends Error {
+  readonly statusCode: number;
+  readonly errorCode: ErrorCode;
+  readonly details?: unknown[];
 
-  // --- Errori relativi alle Risorse ---
-  /**
-   * La risorsa richiesta non è stata trovata (generico).
-   */
-  NotFound = 'NotFound',
-  /**
-   * Una risorsa specifica di tipo Utente non è stata trovata.
-   */
-  UserNotFound = 'UserNotFound',
-  /**
-   * Una risorsa specifica di tipo Prodotto non è stata trovata.
-   */
-  ProductNotFound = 'ProductNotFound', // Esempio di risorsa specifica
-  /**
-   * Si è tentato di creare una risorsa che esiste già (es. email duplicata durante la registrazione).
-   */
-  ResourceAlreadyExists = 'ResourceAlreadyExists',
-  /**
-   * La richiesta è in conflitto con lo stato attuale della risorsa (es. modifica di un ordine già spedito).
-   * Più generico di ResourceAlreadyExists.
-   */
-  Conflict = 'Conflict',
-  /**
-   * Errore di concorrenza, ad esempio fallimento del blocco ottimistico (versione della risorsa cambiata).
-   */
-  VersionConflict = 'VersionConflict',
+  constructor(
+    statusCode: number,
+    errorCode: ErrorCode,
+    message: string,
+    details?: unknown[]
+  ) {
+    super(message);
 
-  // --- Errori di Logica di Business o di Processo ---
-  /**
-   * Un'operazione di business non è consentita secondo le regole definite.
-   */
-  OperationNotAllowed = 'OperationNotAllowed',
-  /**
-   * Scorte insufficienti per un prodotto.
-   */
-  InsufficientStock = 'InsufficientStock',
-  /**
-   * Fondi insufficienti per completare una transazione.
-   */
-  InsufficientFunds = 'InsufficientFunds',
-  /**
-   * È stata superata una quota o un limite (es. numero massimo di richieste).
-   */
-  QuotaExceeded = 'QuotaExceeded',
-  /**
-   * L'operazione richiesta è scaduta lato server.
-   */
-  RequestTimeout = 'RequestTimeout', // Diverso da un timeout di rete
+    this.statusCode = statusCode;
+    this.errorCode = errorCode;
+    this.details = details;
 
-  // --- Errori relativi a Servizi Esterni / Dipendenze ---
-  /**
-   * Un servizio esterno o una dipendenza non è disponibile.
-   */
-  ServiceUnavailable = 'ServiceUnavailable',
-  /**
-   * Errore restituito da un servizio esterno.
-   */
-  ExternalServiceError = 'ExternalServiceError',
-  /**
-   * Timeout durante la comunicazione con un servizio esterno.
-   */
-  DependencyTimeout = 'DependencyTimeout',
-
-  // --- Errori Generici del Server ---
-  /**
-   * Errore generico e imprevisto del server. Usare con parsimonia, preferendo codici più specifici.
-   */
-  InternalError = 'InternalError',
-  /**
-   * Il server non è configurato correttamente per gestire la richiesta.
-   */
-  ConfigurationError = 'ConfigurationError',
-  /**
-   * Il server è sovraccarico o in manutenzione e non può gestire la richiesta.
-   * Spesso associato a un HTTP 503.
-   */
-  ServerBusy = 'ServerBusy',
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
 
 export class ResponseHandler {
@@ -153,6 +51,27 @@ export class ResponseHandler {
 
   static from(response: Response) {
     return new ResponseHandler(response);
+  }
+
+  private sendError(
+    statusCode: number,
+    code: ErrorCode,
+    message: string,
+    details?: unknown
+  ) {
+    const payload: ErrorResponseSchema = {
+      code,
+      message,
+      details,
+      timestamp: new Date().toISOString(),
+    };
+
+    return this.#response.status(statusCode).json(payload);
+  }
+
+  customError(error: CustomError) {
+    const { statusCode, errorCode, message, details } = error;
+    return this.sendError(statusCode, errorCode, message, details);
   }
 
   noData(message: string = 'OK') {
@@ -215,36 +134,15 @@ export class ResponseHandler {
     message: string = 'Unauthorized',
     details?: unknown
   ) {
-    const payload: ErrorResponseSchema = {
-      code,
-      message,
-      details,
-      timestamp: new Date().toISOString(),
-    };
-
-    return this.#response.status(HttpStatusCode.Unauthorized).json(payload);
+    return this.sendError(401, code, message, details);
   }
 
   forbidden(code: ErrorCode, message: string = 'Forbidden', details?: unknown) {
-    const payload: ErrorResponseSchema = {
-      code,
-      message,
-      details,
-      timestamp: new Date().toISOString(),
-    };
-
-    return this.#response.status(HttpStatusCode.Forbidden).json(payload);
+    return this.sendError(403, code, message, details);
   }
 
   notFound(code: ErrorCode, message: string = 'Not found', details?: unknown) {
-    const payload: ErrorResponseSchema = {
-      code,
-      message,
-      details,
-      timestamp: new Date().toISOString(),
-    };
-
-    return this.#response.status(HttpStatusCode.NotFound).json(payload);
+    return this.sendError(404, code, message, details);
   }
 
   badRequest(
@@ -252,40 +150,14 @@ export class ResponseHandler {
     message: string = 'Bad request',
     details?: unknown
   ) {
-    const payload: ErrorResponseSchema = {
-      code,
-      message,
-      details,
-      timestamp: new Date().toISOString(),
-    };
-
-    return this.#response.status(HttpStatusCode.BadRequest).json(payload);
+    return this.sendError(400, code, message, details);
   }
 
   conflict(code: ErrorCode, message: string = 'Conflict', details?: unknown) {
-    const payload: ErrorResponseSchema = {
-      code,
-      message,
-      details,
-      timestamp: new Date().toISOString(),
-    };
-
-    return this.#response.status(HttpStatusCode.Conflict).json(payload);
+    return this.sendError(409, code, message, details);
   }
 
-  customError(
-    statusCode: number,
-    code: ErrorCode,
-    message: string,
-    details?: unknown
-  ) {
-    const payload: ErrorResponseSchema = {
-      code,
-      message,
-      details,
-      timestamp: new Date().toISOString(),
-    };
-
-    return this.#response.status(statusCode).json(payload);
+  internal(message: string = 'Internal Server Error') {
+    return this.sendError(500, ErrorCode.INTERNAL_SERVER, message);
   }
 }

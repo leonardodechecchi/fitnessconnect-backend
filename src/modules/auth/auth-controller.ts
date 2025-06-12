@@ -33,7 +33,7 @@ export const login = async (
 
   if (!user || !user.password || !(await user.verifyPassword(password))) {
     return ResponseHandler.from(res).unauthorized(
-      ErrorCode.InvalidCredentials,
+      ErrorCode.UNAUTHORIZED,
       'Invalid email or password'
     );
   }
@@ -50,7 +50,10 @@ export const register = async (
   const { email } = req.body;
 
   if ((await db.users.count({ email })) > 0) {
-    return ResponseHandler.from(res).conflict(ErrorCode.Conflict);
+    return ResponseHandler.from(res).conflict(
+      ErrorCode.CONFLICT,
+      'Email not available'
+    );
   }
 
   const user = db.users.create(req.body);
@@ -81,12 +84,15 @@ export const refresh = async (req: Request, res: Response) => {
   const { [AUTH.REFRESH_TOKEN_COOKIE_NAME]: refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    return ResponseHandler.from(res).unauthorized(ErrorCode.TokenNotFound);
+    return ResponseHandler.from(res).unauthorized(
+      ErrorCode.TOKEN_NOT_FOUND,
+      'Token not found'
+    );
   }
 
   const isBlacklisted = await redis.get('blacklist', refreshToken);
   if (isBlacklisted) {
-    return ResponseHandler.from(res).unauthorized(ErrorCode.TokenBlacklisted);
+    return ResponseHandler.from(res).unauthorized(ErrorCode.UNAUTHORIZED);
   }
 
   const { userId, userFullName } = verifyRefreshToken(refreshToken);

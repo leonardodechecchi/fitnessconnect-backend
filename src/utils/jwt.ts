@@ -1,11 +1,21 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
-import { ApiError } from '../lib/api-error.js';
+import { CustomError, ErrorCode } from '../lib/response-handler.js';
+
+const { TokenExpiredError } = jwt;
 
 export type JwtPayload = {
   userId: string;
   userFullName: string;
 } & jwt.JwtPayload;
+
+const handleTokenError = (error: unknown): never => {
+  if (error instanceof TokenExpiredError) {
+    throw new CustomError(401, ErrorCode.TOKEN_EXPIRED, 'Token expired');
+  }
+
+  throw new CustomError(401, ErrorCode.INVALID_TOKEN, 'Token invalid');
+};
 
 export type StateJwtPayload = {
   redirectUrl: string;
@@ -21,7 +31,7 @@ export const verifyAccessToken = (token: string): JwtPayload => {
   try {
     return jwt.verify(token, env.ACCESS_TOKEN_SECRET) as JwtPayload;
   } catch (error) {
-    throw ApiError.unauthorized('Invalid access token');
+    return handleTokenError(error);
   }
 };
 
@@ -35,7 +45,7 @@ export const verifyRefreshToken = (token: string): JwtPayload => {
   try {
     return jwt.verify(token, env.REFRESH_TOKEN_SECRET) as JwtPayload;
   } catch (error) {
-    throw ApiError.unauthorized('Invalid refresh token');
+    return handleTokenError(error);
   }
 };
 
@@ -47,6 +57,6 @@ export const verifyStateToken = (token: string): StateJwtPayload => {
   try {
     return jwt.verify(token, env.STATE_TOKEN_SECRET) as StateJwtPayload;
   } catch (error) {
-    throw ApiError.unauthorized('Invalid state token');
+    return handleTokenError(error);
   }
 };

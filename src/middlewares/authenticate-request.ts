@@ -14,8 +14,8 @@ export const authenticate = async (
 
   if (!accessToken) {
     return ResponseHandler.from(res).unauthorized(
-      ErrorCode.TokenNotFound,
-      'Access token not provided'
+      ErrorCode.TOKEN_NOT_FOUND,
+      'Token not provided'
     );
   }
 
