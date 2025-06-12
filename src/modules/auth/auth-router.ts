@@ -10,6 +10,11 @@ import {
   register,
 } from './auth-controller.js';
 import { loginSchema, registerSchema } from './auth-schemas.js';
+import { facebookLogin, googleLogin } from './oauth/oauth-controller.js';
+import {
+  facebookLoginSchema,
+  googleLoginSchema,
+} from './oauth/oauth-schemas.js';
 
 export const authRouter = new SmartRouter('/auth');
 
@@ -43,3 +48,19 @@ authRouter.post(
 authRouter.post('/logout', {}, logout);
 
 authRouter.post('/refresh', {}, refresh);
+
+authRouter.get(
+  '/google',
+  {
+    request: { query: googleLoginSchema },
+  },
+  googleLogin
+);
+
+authRouter.get(
+  '/facebook',
+  {
+    request: { query: facebookLoginSchema },
+  },
+  facebookLogin
+);
