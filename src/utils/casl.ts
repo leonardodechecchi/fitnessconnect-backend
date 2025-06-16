@@ -1,5 +1,5 @@
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import { Answer } from '../modules/qa/question/answer/answer-entity.js';
+import { Answer } from '../modules/qa/answer/answer-entity.js';
 import { Specialty } from '../modules/specialty/specialty-entity.js';
 import { Availability } from '../modules/user/trainer/availability/availability-entity.js';
 import { Exception } from '../modules/user/trainer/exception/exception-entity.js';

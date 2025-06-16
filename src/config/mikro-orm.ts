@@ -3,7 +3,7 @@ import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { SeedManager } from '@mikro-orm/seeder';
 import { ApiError } from '../lib/api-error.js';
 import { Booking } from '../modules/booking/booking-entity.js';
-import { Answer } from '../modules/qa/question/answer/answer-entity.js';
+import { Answer } from '../modules/qa/answer/answer-entity.js';
 import { Question } from '../modules/qa/question/question-entity.js';
 import { Specialty } from '../modules/specialty/specialty-entity.js';
 import { Admin } from '../modules/user/admin/admin-entity.js';

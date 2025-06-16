@@ -1,9 +1,9 @@
 import type { RequestHandler } from 'express';
 
-import { db } from '../../../../database/database-client.js';
-import { ApiError } from '../../../../lib/api-error.js';
-import { ApiResponse } from '../../../../lib/api-response.js';
-import type { QuestionIdSchema } from '../question-schemas.js';
+import { db } from '../../../database/database-client.js';
+import { ApiError } from '../../../lib/api-error.js';
+import { ApiResponse } from '../../../lib/api-response.js';
+import type { QuestionIdSchema } from '../question/question-schemas.js';
 import type { CreateAnswerSchema } from './answer-schemas.js';
 
 export const createAnswer: RequestHandler<

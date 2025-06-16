@@ -6,8 +6,8 @@ import {
   Unique,
   type Ref,
 } from '@mikro-orm/core';
-import type { Trainer } from '../../../user/trainer/trainer-entity.js';
-import type { Question } from '../question-entity.js';
+import type { Trainer } from '../../user/trainer/trainer-entity.js';
+import type { Question } from '../question/question-entity.js';
 
 @Entity()
 @Unique({ properties: ['question', 'trainer'] }) // Un trainer può rispondere solo una volta a una domanda

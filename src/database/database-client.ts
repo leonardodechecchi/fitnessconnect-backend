@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/postgresql';
 import ormConfig from '../config/mikro-orm.js';
 import { Booking } from '../modules/booking/booking-entity.js';
-import { Answer } from '../modules/qa/question/answer/answer-entity.js';
+import { Answer } from '../modules/qa/answer/answer-entity.js';
 import { Question } from '../modules/qa/question/question-entity.js';
 import { Specialty } from '../modules/specialty/specialty-entity.js';
 import { Availability } from '../modules/user/trainer/availability/availability-entity.js';
