@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@casl/ability';
 import type { Request, Response } from 'express';
 import { db } from '../../database/database-client.js';
 import { ErrorCode, ResponseHandler } from '../../lib/response-handler.js';
@@ -17,6 +18,10 @@ export const getSpecialties = async (
   const [specialties, totalItems] = await db.specialties.findAndCount(
     {},
     { offset: (page - 1) * limit, limit }
+  );
+
+  specialties.forEach((specialty) =>
+    ForbiddenError.from(req.ability).throwUnlessCan('read', specialty)
   );
 
   return ResponseHandler.from(res).paginated(specialties, {
@@ -40,6 +45,8 @@ export const createSpecialty = async (
   }
 
   const specialty = db.specialties.create(req.body);
+  ForbiddenError.from(req.ability).throwUnlessCan('create', specialty);
+
   await db.em.flush();
 
   return ResponseHandler.from(res).created(specialty);
@@ -50,6 +57,8 @@ export const deleteSpecialty = async (
   res: Response
 ) => {
   const specialty = await db.specialties.findOneOrFail(req.params.specialtyId);
+  ForbiddenError.from(req.ability).throwUnlessCan('delete', specialty);
+
   await db.em.removeAndFlush(specialty);
 
   return ResponseHandler.from(res).ok(specialty);

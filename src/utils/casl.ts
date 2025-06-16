@@ -1,5 +1,6 @@
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
 import { Answer } from '../modules/qa/question/answer/answer-entity.js';
+import { Specialty } from '../modules/specialty/specialty-entity.js';
 import { Availability } from '../modules/user/trainer/availability/availability-entity.js';
 import { Exception } from '../modules/user/trainer/exception/exception-entity.js';
 import { Trainer } from '../modules/user/trainer/trainer-entity.js';
@@ -39,6 +40,7 @@ export const createAbility = (user: User): Ability => {
       break;
     case 'User':
       can('read', Trainer);
+      can('read', Specialty);
       cannot('read', Trainer, 'exceptions');
       cannot('read', Trainer, 'availabilities');
       can<FlatTrainer>('create', Trainer, { 'user.id': user.id });
@@ -49,6 +51,7 @@ export const createAbility = (user: User): Ability => {
     case 'Trainer':
       // TODO
       can('read', Trainer);
+      can('read', Specialty);
       can<FlatTrainer>('create', Trainer, { 'user.id': user.id });
       can('manage', User, { id: user.id });
       cannot('update', User, ['status']);
