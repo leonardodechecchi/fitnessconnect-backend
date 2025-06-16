@@ -34,7 +34,7 @@ export const createSpecialty = async (
 
   if ((await db.specialties.count({ name })) > 0) {
     return ResponseHandler.from(res).conflict(
-      ErrorCode.Conflict,
+      ErrorCode.CONFLICT,
       `"${name}" specialty already exists`
     );
   }
