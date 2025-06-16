@@ -1,3 +1,4 @@
+import { authenticate } from '../../middlewares/authenticate-request.js';
 import { SmartRouter } from '../../openapi/smart-router.js';
 import { paginationParamSchema } from '../common/common-schemas.js';
 import {
@@ -21,6 +22,7 @@ userRouter.get(
     request: { query: paginationParamSchema },
     response: usersSchema,
   },
+  authenticate,
   getUsers
 );
 
@@ -30,6 +32,7 @@ userRouter.get(
     request: { params: userIdSchema },
     response: userSchema,
   },
+  authenticate,
   getUserById
 );
 
@@ -39,6 +42,7 @@ userRouter.patch(
     request: { params: userIdSchema, body: patchUserSchema },
     response: userSchema,
   },
+  authenticate,
   patchUserById
 );
 
@@ -48,5 +52,6 @@ userRouter.delete(
     request: { params: userIdSchema },
     response: userSchema,
   },
+  authenticate,
   deleteUserById
 );

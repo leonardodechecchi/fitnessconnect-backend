@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@casl/ability';
 import { wrap } from '@mikro-orm/core';
 import { type Request, type Response } from 'express';
 import { db } from '../../database/database-client.js';
@@ -17,6 +18,10 @@ export const getUsers = async (
     { offset: (page - 1) * limit, limit }
   );
 
+  users.forEach((user) =>
+    ForbiddenError.from(req.ability).throwUnlessCan('read', user)
+  );
+
   return ResponseHandler.from(res).paginated(users, {
     page,
     limit,
@@ -29,6 +34,8 @@ export const getUserById = async (
   res: Response
 ) => {
   const user = await db.users.findOneOrFail(req.params.userId);
+  ForbiddenError.from(req.ability).throwUnlessCan('read', user);
+
   return ResponseHandler.from(res).ok(user);
 };
 
@@ -37,6 +44,7 @@ export const patchUserById = async (
   res: Response
 ) => {
   const user = await db.users.findOneOrFail(req.params.userId);
+  ForbiddenError.from(req.ability).throwUnlessCan('update', user);
 
   wrap(user).assign(req.body);
 
@@ -50,6 +58,7 @@ export const deleteUserById = async (
   res: Response
 ) => {
   const user = await db.users.findOneOrFail(req.params.userId);
+  ForbiddenError.from(req.ability).throwUnlessCan('delete', user);
 
   await db.em.removeAndFlush(user);
 
