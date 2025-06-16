@@ -12,15 +12,17 @@ export interface UserShape {
   timezone: string;
 }
 
-export const userSchema: z.ZodSchema<UserShape> = z.object({
-  id: z.string(),
-  firstName: z.string(),
-  lastName: z.string(),
-  fullName: z.string(),
-  email: z.string(),
-  profilePictureUrl: z.string().optional(),
-  timezone: z.string(),
-});
+export const userSchema: z.ZodSchema<UserShape> = z
+  .object({
+    id: z.string(),
+    firstName: z.string(),
+    lastName: z.string(),
+    fullName: z.string(),
+    email: z.string(),
+    profilePictureUrl: z.string().optional(),
+    timezone: z.string(),
+  })
+  .openapi('User');
 
 export const usersSchema = z.array(userSchema);
 

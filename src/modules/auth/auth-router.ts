@@ -1,3 +1,4 @@
+import { z } from 'zod';
 import { authenticate } from '../../middlewares/authenticate-request.js';
 import { SmartRouter } from '../../openapi/smart-router.js';
 import { userSchema } from '../user/user-schemas.js';
@@ -18,7 +19,13 @@ import {
 
 export const authRouter = new SmartRouter('/auth');
 
-authRouter.get('/', {}, checkAuth);
+authRouter.get(
+  '/',
+  {
+    response: z.object({ isAuthenticated: z.boolean() }),
+  },
+  checkAuth
+);
 
 authRouter.get(
   '/me',

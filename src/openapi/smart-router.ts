@@ -13,7 +13,6 @@ import {
   type ZodTypeAny,
 } from 'zod';
 import { env } from '../config/env.js';
-import { validateResponse } from '../middlewares/validare-response.js';
 import { validateRequest } from '../middlewares/validate-request.js';
 import {
   defineSuccessPaginatedResponse,
@@ -149,7 +148,7 @@ export class SmartRouter {
       this.router[method](
         path,
         validateRequest(requestSchemas),
-        validateResponse(responseSchema),
+        // validateResponse(responseSchema),
         ...middlewares
       );
     } else {

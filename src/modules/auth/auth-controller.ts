@@ -13,9 +13,15 @@ import { type LoginSchema, type RegisterSchema } from './auth-schemas.js';
 import { createAuthSession } from './auth-service.js';
 
 export const checkAuth = (req: Request, res: Response) => {
-  const { [AUTH.ACCESS_TOKEN_COOKIE_NAME]: accessToken } = req.cookies;
-  const isAuthenticated = verifyAccessToken(accessToken);
-  return ResponseHandler.from(res).ok(!!isAuthenticated);
+  try {
+    const { [AUTH.ACCESS_TOKEN_COOKIE_NAME]: accessToken } = req.cookies;
+
+    verifyAccessToken(accessToken);
+
+    return ResponseHandler.from(res).ok({ isAuthenticated: true });
+  } catch (error) {
+    return ResponseHandler.from(res).ok({ isAuthenticated: false });
+  }
 };
 
 export const getMe = async (req: Request, res: Response) => {

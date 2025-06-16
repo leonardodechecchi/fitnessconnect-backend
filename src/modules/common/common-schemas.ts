@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ErrorCode } from '../../lib/response-handler.js';
 
 export const paginationParamSchema = z.object({
   page: z.string().openapi({ example: '1' }),
@@ -23,12 +24,14 @@ export const successPaginatedResponseSchema = successResponseSchema.extend({
   pagination: paginationSchema,
 });
 
-export const errorResponseSchema = z.object({
-  code: z.string(),
-  message: z.string(),
-  details: z.unknown().optional(),
-  timestamp: z.string(),
-});
+export const errorResponseSchema = z
+  .object({
+    code: z.nativeEnum(ErrorCode),
+    message: z.string(),
+    details: z.unknown().optional(),
+    timestamp: z.string(),
+  })
+  .openapi('ErrorResponseSchema');
 
 export type PaginationParamSchema = z.infer<typeof paginationParamSchema>;
 export type PaginationSchema = z.infer<typeof paginationSchema>;
