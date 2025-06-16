@@ -1,3 +1,4 @@
+import { ForbiddenError } from '@casl/ability';
 import { wrap } from '@mikro-orm/core';
 import { type Request, type Response } from 'express';
 import { db } from '../../database/database-client.js';
@@ -16,8 +17,11 @@ export const createWishlist = async (
   const { name, trainerId } = req.body;
 
   const trainer = await db.trainers.findOneOrFail(trainerId);
+  ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
 
   const wishlist = db.wishlists.create({ name, owner: req.userId });
+  ForbiddenError.from(req.ability).throwUnlessCan('create', wishlist);
+
   db.items.create({ wishlist, trainer });
 
   await db.em.flush();
@@ -49,6 +53,8 @@ export const getWishlistById = async (
   res: Response
 ) => {
   const wishlist = await db.wishlists.findOneOrFail(req.params.wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('read', wishlist);
+
   return ResponseHandler.from(res).ok(wishlist);
 };
 
@@ -57,6 +63,7 @@ export const patchWishlistById = async (
   res: Response
 ) => {
   const wishlist = await db.wishlists.findOneOrFail(req.params.wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('update', wishlist);
 
   wrap(wishlist).assign(req.body);
   await db.em.flush();
@@ -69,6 +76,7 @@ export const deleteWishlistById = async (
   res: Response
 ) => {
   const wishlist = await db.wishlists.findOneOrFail(req.params.wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('delete', wishlist);
 
   await db.em.removeAndFlush(wishlist);
 
