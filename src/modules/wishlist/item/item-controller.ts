@@ -1,102 +1,87 @@
 import { ForbiddenError } from '@casl/ability';
 import { Router, type Request, type Response } from 'express';
 import { db } from '../../../database/database-client.js';
-import { ApiResponse } from '../../../lib/api-response.js';
-import { validateRequest } from '../../../middlewares/validate-request.js';
+import { ResponseHandler } from '../../../lib/response-handler.js';
+import type { PaginationParamSchema } from '../../common/common-schemas.js';
 import type { WishlistIdSchema } from '../wishlist-schemas.js';
-import {
-  createItemSchema,
-  itemIdSchema,
-  type CreateItemSchema,
-  type ItemIdSchema,
-} from './item-schemas.js';
+import { type ItemIdSchema } from './item-schemas.js';
 
 export const itemRouter = Router({ mergeParams: true });
 
 export const createWishlistItem = async (
   req: Request<WishlistIdSchema>,
   res: Response
-) => {};
+) => {
+  const wishlist = await db.wishlists.findOneOrFail(req.params.wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('update', wishlist);
+
+  const trainer = await db.trainers.findOneOrFail(req.body.trainerId);
+  ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
+
+  const item = db.items.create({
+    wishlist,
+    trainer,
+  });
+
+  await db.em.flush();
+
+  return ResponseHandler.from(res).created(item);
+};
 
 export const getWishlistItems = async (
-  req: Request<WishlistIdSchema>,
+  req: Request<WishlistIdSchema, unknown, unknown, PaginationParamSchema>,
   res: Response
-) => {};
+) => {
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
+
+  const [items, totalItems] = await db.items.findAndCount(
+    { wishlist: req.params.wishlistId },
+    {
+      offset: (page - 1) * limit,
+      limit,
+    }
+  );
+
+  return ResponseHandler.from(res).paginated(items, {
+    page,
+    limit,
+    totalItems,
+  });
+};
 
 export const getWishlistItemById = async (
   req: Request<WishlistIdSchema & ItemIdSchema>,
   res: Response
-) => {};
+) => {
+  const { wishlistId, itemId } = req.params;
+
+  const wishlist = await db.wishlists.findOneOrFail(wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('read', wishlist);
+
+  const item = await db.items.findOneOrFail({
+    wishlist: wishlistId, // ? this way we know the item is part of the user wishlist
+    id: itemId,
+  });
+
+  return ResponseHandler.from(res).created(item);
+};
 
 export const deleteWishlistItemById = async (
   req: Request<WishlistIdSchema & ItemIdSchema>,
   res: Response
-) => {};
+) => {
+  const { wishlistId, itemId } = req.params;
 
-itemRouter.post(
-  '/',
-  validateRequest({ body: createItemSchema }),
-  async (
-    req: Request<WishlistIdSchema, unknown, CreateItemSchema>,
-    res: Response
-  ) => {
-    const { wishlistId } = req.params;
+  const wishlist = await db.wishlists.findOneOrFail(wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('update', wishlist);
 
-    const wishlist = await db.wishlists.findOneOrFail(wishlistId);
+  const item = await db.items.findOneOrFail({
+    wishlist: wishlistId,
+    id: itemId,
+  });
 
-    ForbiddenError.from(req.ability).throwUnlessCan('update', wishlist);
+  await db.em.removeAndFlush(item);
 
-    const trainer = await db.trainers.findOneOrFail(req.body.trainerId);
-
-    ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
-
-    const item = db.items.create({
-      wishlist,
-      trainer,
-    });
-
-    await db.em.flush();
-
-    res.json(ApiResponse.created(item));
-  }
-);
-
-itemRouter.get(
-  '/:itemId',
-  validateRequest({ params: itemIdSchema }),
-  async (req: Request<WishlistIdSchema & ItemIdSchema>, res: Response) => {
-    const { wishlistId, itemId } = req.params;
-
-    const wishlist = await db.wishlists.findOneOrFail(wishlistId);
-
-    ForbiddenError.from(req.ability).throwUnlessCan('read', wishlist);
-
-    const item = await db.items.findOneOrFail({
-      wishlist: wishlistId, // ? this way we know the item is part of the user wishlist
-      id: itemId,
-    });
-
-    res.json(ApiResponse.created(item));
-  }
-);
-
-itemRouter.delete(
-  '/:itemId',
-  validateRequest({ params: itemIdSchema }),
-  async (req: Request<WishlistIdSchema & ItemIdSchema>, res: Response) => {
-    const { wishlistId, itemId } = req.params;
-
-    const wishlist = await db.wishlists.findOneOrFail(wishlistId);
-
-    ForbiddenError.from(req.ability).throwUnlessCan('update', wishlist);
-
-    const item = await db.items.findOneOrFail({
-      wishlist: wishlistId,
-      id: itemId,
-    });
-
-    await db.em.removeAndFlush(item);
-
-    res.json(ApiResponse.noContent());
-  }
-);
+  return ResponseHandler.from(res).ok(item);
+};
