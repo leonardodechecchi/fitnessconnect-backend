@@ -31,7 +31,7 @@ Copy the example environment file and configure it:
 cp .env.example .env
 ```
 
-> 💡 **Tip**: Edit the `.env` file with your configuration values. Refer to `.env.example` for all available options.
+Edit the `.env` file with your configuration values. Refer to `.env.example` for all available options.
 
 #### 4. 🎯 Start the Development Server
 
@@ -54,5 +54,3 @@ Once the server is running, you can access:
 ## 🛠️ Development
 
 The server runs in development mode with hot reload enabled. Any changes to the source files will automatically restart the server.
-
-> ⚠️ **Important**: Make sure your database connection is properly configured in the `.env` file before starting the server.
