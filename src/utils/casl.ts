@@ -1,5 +1,4 @@
 import { AbilityBuilder, createMongoAbility } from '@casl/ability';
-import { Answer } from '../modules/qa/answer/answer-entity.js';
 import { Specialty } from '../modules/specialty/specialty-entity.js';
 import { Availability } from '../modules/user/trainer/availability/availability-entity.js';
 import { Exception } from '../modules/user/trainer/exception/exception-entity.js';
@@ -25,47 +24,45 @@ export const createAbility = (user: User): Ability => {
   const { role, status } = user;
 
   if (status === UserStatus.Restricted) {
-    // ! only READ permissions
+    // ! only read permissions
 
     can('read', Trainer);
+    can('read', Specialty);
     can('read', User, { id: user.id });
     can<FlatWishlist>('read', Wishlist, { 'owner.id': user.id });
 
     return build();
   }
 
-  switch (role) {
-    case 'Admin':
-      can('manage', 'all');
-      break;
-    case 'User':
-      can('read', Trainer);
-      can('read', Specialty);
-      cannot('read', Trainer, 'exceptions');
-      cannot('read', Trainer, 'availabilities');
-      can<FlatTrainer>('create', Trainer, { 'user.id': user.id });
-      can('manage', User, { id: user.id });
-      cannot('update', User, ['status']);
-      can<FlatWishlist>('manage', Wishlist, { 'owner.id': user.id });
-      break;
-    case 'Trainer':
-      // TODO
-      can('read', Trainer);
-      can('read', Specialty);
-      can<FlatTrainer>('create', Trainer, { 'user.id': user.id });
-      can('manage', User, { id: user.id });
-      cannot('update', User, ['status']);
-      can<FlatWishlist>('manage', Wishlist, { 'owner.id': user.id });
+  // ? Common rules shared between User and Trainer
+  if (role === 'User' || role === 'Trainer') {
+    can('read', Trainer);
+    can('read', Specialty);
+    can('manage', User, { id: user.id });
+    can<FlatTrainer>('create', Trainer, { 'user.id': user.id });
+    cannot('update', User, 'status');
+    can<FlatWishlist>('manage', Wishlist, { 'owner.id': user.id });
+  }
 
-      // ! trainer specific rules
-      can<FlatAvailability>(['create', 'read'], Availability, {
-        'trainer.user.id': user.id,
-      });
-      can<FlatException>(['create', 'read'], Exception, {
-        'trainer.user.id': user.id,
-      });
-      can('create', Answer);
-      break;
+  // ? User specific rules
+  if (role === 'User') {
+    cannot('read', Trainer, 'exceptions');
+    cannot('read', Trainer, 'availabilities');
+  }
+
+  // ? Trainer specific rules
+  if (role === 'Trainer') {
+    can<FlatAvailability>(['create', 'read'], Availability, {
+      'trainer.user.id': user.id,
+    });
+    can<FlatException>(['create', 'read'], Exception, {
+      'trainer.user.id': user.id,
+    });
+  }
+
+  // ? Admin specific rules
+  if (role === 'Admin') {
+    can('manage', 'all');
   }
 
   return build();
