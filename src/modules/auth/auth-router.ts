@@ -11,7 +11,12 @@ import {
   register,
 } from './auth-controller.js';
 import { loginSchema, registerSchema } from './auth-schemas.js';
-import { facebookLogin, googleLogin } from './oauth/oauth-controller.js';
+import {
+  facebookLogin,
+  facebookLoginCallback,
+  googleLogin,
+  googleLoginCallback,
+} from './oauth/oauth-controller.js';
 import {
   facebookLoginSchema,
   googleLoginSchema,
@@ -57,7 +62,7 @@ authRouter.post('/logout', {}, logout);
 authRouter.post('/refresh', {}, refresh);
 
 authRouter.get(
-  '/google',
+  '/oauth/google',
   {
     request: { query: googleLoginSchema },
   },
@@ -65,9 +70,25 @@ authRouter.get(
 );
 
 authRouter.get(
-  '/facebook',
+  '/oauth/google/callback',
+  {
+    // request: { query: googleLoginCallbackSchema },
+  },
+  googleLoginCallback
+);
+
+authRouter.get(
+  '/oauth/facebook',
   {
     request: { query: facebookLoginSchema },
   },
   facebookLogin
+);
+
+authRouter.get(
+  '/oauth/facebook/callback',
+  {
+    // request: { query: facebookLoginCbSchema },
+  },
+  facebookLoginCallback
 );

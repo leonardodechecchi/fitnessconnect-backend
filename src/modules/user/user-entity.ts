@@ -16,9 +16,9 @@ import { Trainer } from './trainer/trainer-entity.js';
 import type { UserShape } from './user-schemas.js';
 
 export enum UserStatus {
-  ACTIVE = 'active',
-  RESTRICTED = 'restricted',
-  BANNED = 'banned',
+  Active = 'Active',
+  Restricted = 'Restricted',
+  Banned = 'Banned',
 }
 
 @Entity()
@@ -45,7 +45,7 @@ export class User implements UserShape {
   profilePictureUrl?: string;
 
   @Enum({ items: () => UserStatus, hidden: true })
-  status: UserStatus = UserStatus.ACTIVE;
+  status: UserStatus = UserStatus.Active;
 
   @Property()
   timezone!: string;
@@ -94,6 +94,6 @@ export class User implements UserShape {
   }
 
   isBanned() {
-    return this.status === UserStatus.BANNED;
+    return this.status === UserStatus.Banned;
   }
 }

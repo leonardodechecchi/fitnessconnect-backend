@@ -24,7 +24,7 @@ export const createAbility = (user: User): Ability => {
 
   const { role, status } = user;
 
-  if (status === UserStatus.RESTRICTED) {
+  if (status === UserStatus.Restricted) {
     // ! only READ permissions
 
     can('read', Trainer);

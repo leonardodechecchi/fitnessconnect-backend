@@ -1,7 +1,7 @@
 import { type Request, type Response } from 'express';
 import { env } from '../../../config/env.js';
 import { db } from '../../../database/database-client.js';
-import { ApiError } from '../../../lib/api-error.js';
+import { CustomError, ErrorCode } from '../../../lib/response-handler.js';
 import { facebook, FACEBOOK_ERRORS } from '../../../services/facebook.js';
 import { google, GOOGLE_ERRORS } from '../../../services/google.js';
 import { verifyStateToken } from '../../../utils/jwt.js';
@@ -31,9 +31,10 @@ export const googleLoginCallback = async (
     const { error, error_description } = req.query;
 
     const message = error_description || 'Something went wrong';
-    const code = GOOGLE_ERRORS[error as keyof typeof GOOGLE_ERRORS] || 400;
+    const statusCode =
+      GOOGLE_ERRORS[error as keyof typeof GOOGLE_ERRORS] ?? 400;
 
-    throw new ApiError(code, message);
+    throw new CustomError(statusCode, ErrorCode.OAUTH_ERROR, message);
   }
 
   const { code, state } = req.query;
@@ -78,9 +79,10 @@ export const facebookLoginCallback = async (
     const { error, error_description } = req.query;
 
     const message = error_description || 'Something went wrong';
-    const code = FACEBOOK_ERRORS[error as keyof typeof FACEBOOK_ERRORS] || 400;
+    const statusCode =
+      FACEBOOK_ERRORS[error as keyof typeof FACEBOOK_ERRORS] ?? 400;
 
-    throw new ApiError(code, message);
+    throw new CustomError(statusCode, ErrorCode.OAUTH_ERROR, message);
   }
 
   const { state, code, granted_scopes } = req.query;
@@ -91,7 +93,11 @@ export const facebookLoginCallback = async (
     .find((scope) => scope === 'email');
 
   if (!hasGrantedEmail) {
-    throw ApiError.forbidden('Email permission is required');
+    throw new CustomError(
+      403,
+      ErrorCode.FORBIDDEN,
+      'Email permission is required'
+    );
   }
 
   const tokens = await facebook.getAccessToken(code);
