@@ -39,27 +39,27 @@ export const createTrainerAvailability = async (
   });
 
   if (trainer.availabilities.count() >= 5) {
-    return ResponseHandler.from(res).badRequest(
-      ErrorCode.AccessDenied, // TODO: change
+    return ResponseHandler.from(res).conflict(
+      ErrorCode.CONFLICT,
       'You cannot create more than 5 availabilities for the same day'
     );
   }
 
+  const targetAvailability = Interval.fromDateTimes(
+    timeToDateTime(startTime),
+    timeToDateTime(endTime)
+  );
+
   // TODO: how does we handle adiacent intervals?
   for (const availability of trainer.availabilities) {
-    const interval = Interval.fromDateTimes(
+    const existingAvailability = Interval.fromDateTimes(
       timeToDateTime(availability.startTime),
       timeToDateTime(availability.endTime)
     );
 
-    const other = Interval.fromDateTimes(
-      timeToDateTime(startTime),
-      timeToDateTime(endTime)
-    );
-
-    if (interval.overlaps(other)) {
-      return ResponseHandler.from(res).badRequest(
-        ErrorCode.AccessDenied, // TODO: change
+    if (existingAvailability.overlaps(targetAvailability)) {
+      return ResponseHandler.from(res).conflict(
+        ErrorCode.CONFLICT,
         'The availability overlaps with an existing one'
       );
     }

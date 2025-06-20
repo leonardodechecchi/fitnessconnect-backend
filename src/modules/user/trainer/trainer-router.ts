@@ -11,6 +11,14 @@ import {
   createAvailabilitySchema,
 } from './availability/availability-schemas.js';
 import {
+  createTrainerException,
+  getTrainerExceptions,
+} from './exception/exception-controller.js';
+import {
+  createExceptionSchema,
+  exceptionsSchema,
+} from './exception/exception-schemas.js';
+import {
   getTrainerById,
   getTrainers,
   getTrainerSlots,
@@ -64,6 +72,7 @@ trainerRouter.get(
     request: { params: trainerIdSchema },
     response: availabilitiesSchema,
   },
+  authenticate,
   getTrainerAvailabilities
 );
 
@@ -76,5 +85,31 @@ trainerRouter.post(
     },
     response: availabilitySchema,
   },
+  authenticate,
   createTrainerAvailability
+);
+
+trainerRouter.get(
+  '/:trainerId/exceptions',
+  {
+    request: {
+      params: trainerIdSchema,
+    },
+    response: exceptionsSchema,
+  },
+  authenticate,
+  getTrainerExceptions
+);
+
+trainerRouter.post(
+  '/:trainerId/exceptions',
+  {
+    request: {
+      params: trainerIdSchema,
+      body: createExceptionSchema,
+    },
+    response: exceptionsSchema,
+  },
+  authenticate,
+  createTrainerException
 );

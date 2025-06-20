@@ -1,21 +1,21 @@
 import { ForbiddenError } from '@casl/ability';
-import type { RequestHandler } from 'express';
+import type { Request, Response } from 'express';
 import { DateTime } from 'luxon';
 import { db } from '../../../../database/database-client.js';
-import { ApiError } from '../../../../lib/api-error.js';
-import { ApiResponse } from '../../../../lib/api-response.js';
+import {
+  ErrorCode,
+  ResponseHandler,
+} from '../../../../lib/response-handler.js';
 import type { TrainerIdSchema } from '../trainer-schemas.js';
 import type { CreateExceptionSchema } from './exception-schemas.js';
 
-export const getExceptions: RequestHandler<TrainerIdSchema> = async (
-  req,
-  res
+export const getTrainerExceptions = async (
+  req: Request<TrainerIdSchema>,
+  res: Response
 ) => {
-  const { trainerId } = req.params;
-
   const now = DateTime.now().toJSDate();
 
-  const trainer = await db.trainers.findOneOrFail(trainerId, {
+  const trainer = await db.trainers.findOneOrFail(req.params.trainerId, {
     populate: ['exceptions'],
     populateWhere: {
       exceptions: {
@@ -24,20 +24,17 @@ export const getExceptions: RequestHandler<TrainerIdSchema> = async (
     },
   });
 
-  const forbidden = ForbiddenError.from(req.ability);
-
   Object.keys(trainer).forEach((field) =>
-    forbidden.throwUnlessCan('read', trainer, field)
+    ForbiddenError.from(req.ability).throwUnlessCan('read', trainer, field)
   );
 
-  res.json(ApiResponse.ok(trainer.exceptions.getItems()));
+  return ResponseHandler.from(res).ok(trainer.exceptions.getItems());
 };
 
-export const createException: RequestHandler<
-  TrainerIdSchema,
-  unknown,
-  CreateExceptionSchema
-> = async (req, res) => {
+export const createTrainerException = async (
+  req: Request<TrainerIdSchema, unknown, CreateExceptionSchema>,
+  res: Response
+) => {
   const { trainerId } = req.params;
   const { startDatetime, endDatetime } = req.body;
 
@@ -57,7 +54,10 @@ export const createException: RequestHandler<
   ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
 
   if (trainer.exceptions.length > 0) {
-    throw ApiError.conflict('The exception overlaps with an existing one');
+    return ResponseHandler.from(res).conflict(
+      ErrorCode.CONFLICT,
+      'The exception overlaps with an existing one'
+    );
   }
 
   const exception = db.exceptions.create({ ...req.body, trainer });
@@ -65,6 +65,5 @@ export const createException: RequestHandler<
 
   await db.em.flush();
 
-  const response = ApiResponse.created(exception);
-  res.status(response.code).json(response);
+  return ResponseHandler.from(res).ok(exception);
 };

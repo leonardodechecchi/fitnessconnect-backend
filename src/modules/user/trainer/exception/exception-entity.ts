@@ -6,9 +6,10 @@ import {
   type Ref,
 } from '@mikro-orm/core';
 import type { Trainer } from '../trainer-entity.js';
+import type { ExceptionShape } from './exception-schemas.js';
 
 @Entity()
-export class Exception {
+export class Exception implements ExceptionShape {
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 
