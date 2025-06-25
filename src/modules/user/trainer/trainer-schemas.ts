@@ -1,11 +1,13 @@
 import { DateTime } from 'luxon';
 import { z } from 'zod';
+import { specialtiesSchema } from '../../specialty/specialty-schemas.js';
 import { userSchema } from '../user-schemas.js';
 
 export const trainerSchema = z.object({
   user: userSchema,
   bio: z.string().optional(),
   sessionDuration: z.number(),
+  specialties: specialtiesSchema,
 });
 
 export const trainersSchema = z.array(trainerSchema);

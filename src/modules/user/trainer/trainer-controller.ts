@@ -20,7 +20,7 @@ export const getTrainers = async (
 
   const [trainers, totalItems] = await db.trainers.findAndCount(
     {},
-    { offset: (page - 1) * limit, limit, populate: ['user'] }
+    { offset: (page - 1) * limit, limit, populate: ['user', 'specialties'] }
   );
 
   return ResponseHandler.from(res).paginated(trainers, {
