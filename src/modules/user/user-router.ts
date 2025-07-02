@@ -9,9 +9,9 @@ import {
 } from './user-controller.js';
 import {
   patchUserSchema,
+  userArraySchema,
   userIdSchema,
   userSchema,
-  usersSchema,
 } from './user-schemas.js';
 
 export const userRouter = new SmartRouter('/users');
@@ -20,7 +20,10 @@ userRouter.get(
   '/',
   {
     request: { query: paginationParamSchema },
-    response: usersSchema,
+    response: {
+      schema: userArraySchema,
+      options: { enablePagination: true },
+    },
   },
   authenticate,
   getUsers
@@ -30,7 +33,7 @@ userRouter.get(
   '/:userId',
   {
     request: { params: userIdSchema },
-    response: userSchema,
+    response: { schema: userSchema },
   },
   authenticate,
   getUserById
@@ -40,7 +43,7 @@ userRouter.patch(
   '/:userId',
   {
     request: { params: userIdSchema, body: patchUserSchema },
-    response: userSchema,
+    response: { schema: userSchema },
   },
   authenticate,
   patchUserById
@@ -50,7 +53,7 @@ userRouter.delete(
   '/:userId',
   {
     request: { params: userIdSchema },
-    response: userSchema,
+    response: { schema: userSchema },
   },
   authenticate,
   deleteUserById

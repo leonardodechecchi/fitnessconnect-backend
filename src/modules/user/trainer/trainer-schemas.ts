@@ -9,7 +9,7 @@ export const trainerSchema = z.object({
   sessionDuration: z.number(),
 });
 
-export const trainersSchema = z.array(trainerSchema);
+export const trainerArraySchema = z.array(trainerSchema);
 
 export const trainerIdSchema = z.object({
   trainerId: z.string().uuid(),

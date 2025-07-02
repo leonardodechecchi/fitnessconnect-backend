@@ -6,7 +6,6 @@ import {
 } from 'express';
 import pluralize from 'pluralize';
 import {
-  ZodArray,
   ZodSchema,
   type AnyZodObject,
   type ZodEffects,
@@ -28,13 +27,28 @@ type SmartPath = `/${string}`;
 
 type SmartMethod = 'get' | 'post' | 'put' | 'patch' | 'delete';
 
+type SmartOptions = {
+  pagination?: boolean;
+};
+
+type ResponseOptions = {
+  enablePagination?: boolean;
+};
+
+type RequestValidation = {
+  params?: ZodObjectWithEffect;
+  query?: ZodObjectWithEffect;
+  body?: ZodSchema;
+};
+
+type ResponseValidation = {
+  schema?: ZodTypeAny;
+  options?: ResponseOptions;
+};
+
 type ValidationSchemas = {
-  request?: {
-    params?: ZodObjectWithEffect;
-    query?: ZodObjectWithEffect;
-    body?: ZodSchema;
-  };
-  response?: ZodTypeAny;
+  request?: RequestValidation;
+  response?: ResponseValidation;
 };
 
 type SmartRouteParameters = [
@@ -96,11 +110,15 @@ export class SmartRouter {
   private wrapper(method: SmartMethod, ...args: SmartRouteParameters) {
     const [path, schemas, ...middlewares] = args;
 
+    const options: ResponseOptions = schemas?.response?.options ?? {
+      enablePagination: false,
+    };
+
     const requestSchemas = schemas.request ?? {};
     const responseSchema =
-      schemas.response instanceof ZodArray
-        ? defineSuccessPaginatedResponse(schemas.response)
-        : defineSuccessResponse(schemas.response);
+      schemas.response?.schema && options.enablePagination
+        ? defineSuccessPaginatedResponse(schemas.response.schema)
+        : defineSuccessResponse(schemas.response?.schema);
 
     const handler = middlewares[middlewares.length - 1];
     if (!handler) throw new Error('Router handler not provided');

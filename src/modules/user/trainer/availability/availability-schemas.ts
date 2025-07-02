@@ -8,7 +8,7 @@ export const availabilitySchema = z.object({
   endTime: z.string(),
 });
 
-export const availabilitiesSchema = z.array(availabilitySchema);
+export const availabilityArraySchema = z.array(availabilitySchema);
 
 export const availabilityIdSchema = z.object({
   availabilityId: z.string().uuid(),

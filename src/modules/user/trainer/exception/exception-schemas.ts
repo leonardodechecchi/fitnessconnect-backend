@@ -21,7 +21,7 @@ export const exceptionSchema: z.ZodSchema<ExceptionShape> = z.object({
   trainer: z.custom<Ref<Trainer>>(),
 });
 
-export const exceptionsSchema = z.array(exceptionSchema);
+export const exceptionArraySchema = z.array(exceptionSchema);
 
 export const createExceptionSchema = z
   .object({

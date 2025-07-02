@@ -25,5 +25,7 @@ export const rawRuleSchema = z.object({
   reason: z.string().optional(),
 });
 
+export const rawRuleArraySchema = z.array(rawRuleSchema);
+
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type RegisterSchema = z.infer<typeof registerSchema>;

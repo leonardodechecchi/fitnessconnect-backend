@@ -24,7 +24,7 @@ export const userSchema: z.ZodSchema<UserShape> = z
   })
   .openapi('User');
 
-export const usersSchema = z.array(userSchema);
+export const userArraySchema = z.array(userSchema);
 
 export const userIdSchema = z.object({
   userId: z.string().uuid(),

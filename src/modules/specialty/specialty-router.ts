@@ -8,7 +8,7 @@ import {
 } from './specialty-controller.js';
 import {
   createSpecialtySchema,
-  specialtiesSchema,
+  specialtyArraySchema,
   specialtyIdSchema,
   specialtySchema,
 } from './specialty-schemas.js';
@@ -19,7 +19,10 @@ specialtyRouter.get(
   '/',
   {
     request: { query: paginationParamSchema },
-    response: specialtiesSchema,
+    response: {
+      schema: specialtyArraySchema,
+      options: { enablePagination: true },
+    },
   },
   authenticate,
   getSpecialties
@@ -29,7 +32,7 @@ specialtyRouter.post(
   '/',
   {
     request: { body: createSpecialtySchema },
-    response: specialtySchema,
+    response: { schema: specialtySchema },
   },
   authenticate,
   createSpecialty
@@ -39,7 +42,7 @@ specialtyRouter.delete(
   '/:specialtyId',
   {
     request: { params: specialtyIdSchema },
-    response: specialtySchema,
+    response: { schema: specialtySchema },
   },
   authenticate,
   deleteSpecialty

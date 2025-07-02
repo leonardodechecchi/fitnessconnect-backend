@@ -5,7 +5,7 @@ import {
   getTrainerAvailabilities,
 } from './availability/availability-controller.js';
 import {
-  availabilitiesSchema,
+  availabilityArraySchema,
   availabilitySchema,
   createAvailabilitySchema,
 } from './availability/availability-schemas.js';
@@ -15,7 +15,8 @@ import {
 } from './exception/exception-controller.js';
 import {
   createExceptionSchema,
-  exceptionsSchema,
+  exceptionArraySchema,
+  exceptionSchema,
 } from './exception/exception-schemas.js';
 import {
   getTrainerById,
@@ -24,11 +25,11 @@ import {
 } from './trainer-controller.js';
 import {
   slotArraySchema,
+  trainerArraySchema,
   trainerIdSchema,
   trainerPaginationParamSchema,
   trainerSchema,
   trainerSlotsQueryParams,
-  trainersSchema,
 } from './trainer-schemas.js';
 
 export const trainerRouter = new SmartRouter('/trainers');
@@ -37,7 +38,10 @@ trainerRouter.get(
   '/',
   {
     request: { query: trainerPaginationParamSchema },
-    response: trainersSchema,
+    response: {
+      schema: trainerArraySchema,
+      options: { enablePagination: true },
+    },
   },
   authenticate,
   getTrainers
@@ -47,7 +51,7 @@ trainerRouter.get(
   '/:trainerId',
   {
     request: { params: trainerIdSchema },
-    response: trainerSchema,
+    response: { schema: trainerSchema },
   },
   authenticate,
   getTrainerById
@@ -60,7 +64,7 @@ trainerRouter.get(
       params: trainerIdSchema,
       query: trainerSlotsQueryParams,
     },
-    response: slotArraySchema,
+    response: { schema: slotArraySchema },
   },
   authenticate,
   getTrainerSlots
@@ -70,7 +74,7 @@ trainerRouter.get(
   '/:trainerId/availabilities',
   {
     request: { params: trainerIdSchema },
-    response: availabilitiesSchema,
+    response: { schema: availabilityArraySchema },
   },
   authenticate,
   getTrainerAvailabilities
@@ -83,7 +87,7 @@ trainerRouter.post(
       params: trainerIdSchema,
       body: createAvailabilitySchema,
     },
-    response: availabilitySchema,
+    response: { schema: availabilitySchema },
   },
   authenticate,
   createTrainerAvailability
@@ -92,10 +96,8 @@ trainerRouter.post(
 trainerRouter.get(
   '/:trainerId/exceptions',
   {
-    request: {
-      params: trainerIdSchema,
-    },
-    response: exceptionsSchema,
+    request: { params: trainerIdSchema },
+    response: { schema: exceptionArraySchema },
   },
   authenticate,
   getTrainerExceptions
@@ -108,7 +110,7 @@ trainerRouter.post(
       params: trainerIdSchema,
       body: createExceptionSchema,
     },
-    response: exceptionsSchema,
+    response: { schema: exceptionSchema },
   },
   authenticate,
   createTrainerException

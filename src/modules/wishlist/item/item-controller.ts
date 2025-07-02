@@ -1,32 +1,10 @@
 import { ForbiddenError } from '@casl/ability';
-import { Router, type Request, type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { db } from '../../../database/database-client.js';
 import { ResponseHandler } from '../../../lib/response-handler.js';
 import type { PaginationParamSchema } from '../../common/common-schemas.js';
 import type { WishlistIdSchema } from '../wishlist-schemas.js';
 import { type ItemIdSchema } from './item-schemas.js';
-
-export const itemRouter = Router({ mergeParams: true });
-
-export const createWishlistItem = async (
-  req: Request<WishlistIdSchema>,
-  res: Response
-) => {
-  const wishlist = await db.wishlists.findOneOrFail(req.params.wishlistId);
-  ForbiddenError.from(req.ability).throwUnlessCan('update', wishlist);
-
-  const trainer = await db.trainers.findOneOrFail(req.body.trainerId);
-  ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
-
-  const item = db.items.create({
-    wishlist,
-    trainer,
-  });
-
-  await db.em.flush();
-
-  return ResponseHandler.from(res).created(item);
-};
 
 export const getWishlistItems = async (
   req: Request<WishlistIdSchema, unknown, unknown, PaginationParamSchema>,
@@ -48,6 +26,26 @@ export const getWishlistItems = async (
     limit,
     totalItems,
   });
+};
+
+export const createWishlistItem = async (
+  req: Request<WishlistIdSchema>,
+  res: Response
+) => {
+  const wishlist = await db.wishlists.findOneOrFail(req.params.wishlistId);
+  ForbiddenError.from(req.ability).throwUnlessCan('update', wishlist);
+
+  const trainer = await db.trainers.findOneOrFail(req.body.trainerId);
+  ForbiddenError.from(req.ability).throwUnlessCan('read', trainer);
+
+  const item = db.items.create({
+    wishlist,
+    trainer,
+  });
+
+  await db.em.flush();
+
+  return ResponseHandler.from(res).created(item);
 };
 
 export const getWishlistItemById = async (

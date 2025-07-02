@@ -10,7 +10,11 @@ import {
   refresh,
   register,
 } from './auth-controller.js';
-import { loginSchema, rawRuleSchema, registerSchema } from './auth-schemas.js';
+import {
+  loginSchema,
+  rawRuleArraySchema,
+  registerSchema,
+} from './auth-schemas.js';
 import {
   facebookLogin,
   facebookLoginCallback,
@@ -27,7 +31,7 @@ export const authRouter = new SmartRouter('/auth');
 authRouter.get(
   '/',
   {
-    response: z.object({ isAuthenticated: z.boolean() }),
+    response: { schema: z.object({ isAuthenticated: z.boolean() }) },
   },
   checkAuth
 );
@@ -35,7 +39,7 @@ authRouter.get(
 authRouter.get(
   '/me',
   {
-    response: userSchema,
+    response: { schema: userSchema },
   },
   authenticate,
   getMe
@@ -45,7 +49,7 @@ authRouter.post(
   '/login',
   {
     request: { body: loginSchema },
-    response: z.array(rawRuleSchema),
+    response: { schema: rawRuleArraySchema },
   },
   login
 );

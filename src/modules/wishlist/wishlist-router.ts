@@ -7,7 +7,12 @@ import {
   getWishlistItemById,
   getWishlistItems,
 } from './item/item-controller.js';
-import { createItemSchema, itemIdSchema } from './item/item-schemas.js';
+import {
+  createItemSchema,
+  itemArraySchema,
+  itemIdSchema,
+  itemSchema,
+} from './item/item-schemas.js';
 import {
   createWishlist,
   getWishlistById,
@@ -15,9 +20,9 @@ import {
 } from './wishlist-controller.js';
 import {
   createWishlistSchema,
+  wishlistArraySchema,
   wishlistIdSchema,
   wishlistSchema,
-  wishlistsSchema,
 } from './wishlist-schemas.js';
 
 export const wishlistRouter = new SmartRouter('/wishlists');
@@ -26,7 +31,7 @@ wishlistRouter.post(
   '/',
   {
     request: { body: createWishlistSchema },
-    response: wishlistSchema,
+    response: { schema: wishlistSchema },
   },
   authenticate,
   createWishlist
@@ -36,7 +41,10 @@ wishlistRouter.get(
   '/',
   {
     request: { query: paginationParamSchema },
-    response: wishlistsSchema,
+    response: {
+      schema: wishlistArraySchema,
+      options: { enablePagination: true },
+    },
   },
   authenticate,
   getWishlists
@@ -46,7 +54,7 @@ wishlistRouter.get(
   '/:wishlistId',
   {
     request: { params: wishlistIdSchema },
-    response: wishlistSchema,
+    response: { schema: wishlistSchema },
   },
   authenticate,
   getWishlistById
@@ -56,7 +64,7 @@ wishlistRouter.patch(
   '/:wishlistId',
   {
     request: { params: wishlistIdSchema },
-    response: wishlistSchema,
+    response: { schema: wishlistSchema },
   },
   authenticate,
   getWishlistById
@@ -66,10 +74,23 @@ wishlistRouter.delete(
   '/:wishlistId',
   {
     request: { params: wishlistIdSchema },
-    response: wishlistSchema,
+    response: { schema: wishlistSchema },
   },
   authenticate,
   getWishlistById
+);
+
+wishlistRouter.get(
+  '/:wishlistId/items',
+  {
+    request: { params: wishlistIdSchema },
+    response: {
+      schema: itemArraySchema,
+      options: { enablePagination: true },
+    },
+  },
+  authenticate,
+  getWishlistItems
 );
 
 wishlistRouter.post(
@@ -79,24 +100,17 @@ wishlistRouter.post(
       params: wishlistIdSchema,
       body: createItemSchema,
     },
+    response: { schema: itemSchema },
   },
   authenticate,
   createWishlistItem
 );
 
 wishlistRouter.get(
-  '/:wishlistId/items',
-  {
-    request: { params: wishlistIdSchema },
-  },
-  authenticate,
-  getWishlistItems
-);
-
-wishlistRouter.get(
   '/:wishlistId/items/:itemId',
   {
     request: { params: wishlistIdSchema.merge(itemIdSchema) },
+    response: { schema: itemSchema },
   },
   authenticate,
   getWishlistItemById
@@ -106,6 +120,7 @@ wishlistRouter.delete(
   '/:wishlistId/items/:itemId',
   {
     request: { params: wishlistIdSchema.merge(itemIdSchema) },
+    response: { schema: itemSchema },
   },
   authenticate,
   deleteWishlistItemById

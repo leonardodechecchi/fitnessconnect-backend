@@ -5,7 +5,7 @@ export const specialtySchema = z.object({
   name: z.string(),
 });
 
-export const specialtiesSchema = z.array(specialtySchema);
+export const specialtyArraySchema = z.array(specialtySchema);
 
 export const specialtyIdSchema = z.object({
   specialtyId: z.string().uuid(),

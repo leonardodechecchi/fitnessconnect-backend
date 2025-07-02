@@ -6,7 +6,7 @@ export const wishlistSchema = z.object({
   owner: z.number(),
 });
 
-export const wishlistsSchema = z.array(wishlistSchema);
+export const wishlistArraySchema = z.array(wishlistSchema);
 
 export const wishlistIdSchema = z.object({
   wishlistId: z.string().uuid(),
