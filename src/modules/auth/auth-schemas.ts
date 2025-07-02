@@ -18,9 +18,9 @@ export const registerSchema = z.object({
 
 export const rawRuleSchema = z.object({
   action: z.union([z.string(), z.array(z.string())]),
-  subject: z.union([z.string(), z.array(z.string())]).optional(),
+  subject: z.union([z.string(), z.array(z.string())]),
   fields: z.array(z.string()).optional(),
-  conditions: z.any().optional(),
+  conditions: z.record(z.any()).optional(),
   inverted: z.boolean().optional(),
   reason: z.string().optional(),
 });
