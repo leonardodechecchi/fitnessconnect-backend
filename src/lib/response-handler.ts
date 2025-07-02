@@ -21,6 +21,7 @@ export enum ErrorCode {
   INVALID_INPUT = 'INVALID_INPUT',
   OAUTH_ERROR = 'OAUTH_ERROR',
   PERMISSION_NOT_FOUND = 'PERMISSION_NOT_FOUND',
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
 }
 
 export class CustomError extends Error {

@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { env } from '../config/env.js';
-import { ApiError } from '../lib/api-error.js';
+import { CustomError, ErrorCode } from '../lib/response-handler.js';
 import type {
   FacebookAccessTokenResponse,
   FacebookApiErrorResponse,
@@ -36,18 +36,25 @@ class FacebookService {
         const fbError = error.response.data.error;
         const code = error.response.status;
 
-        throw new ApiError(
+        throw new CustomError(
           code,
+          ErrorCode.OAUTH_ERROR,
           fbError.error_user_msg || fbError.exception || fbError.message
         );
       }
 
       if (error.request) {
-        throw ApiError.serviceUnavailable('Unable to reach Facebook servers');
+        throw new CustomError(
+          503,
+          ErrorCode.SERVICE_UNAVAILABLE,
+          'Unable to reach Facebook servers'
+        );
       }
     }
 
-    throw ApiError.internalError(
+    throw new CustomError(
+      500,
+      ErrorCode.INTERNAL_SERVER,
       'An unexpected error occurred while communicating with Facebook'
     );
   }

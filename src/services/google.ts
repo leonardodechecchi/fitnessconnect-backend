@@ -1,7 +1,7 @@
 import { gaxios, OAuth2Client } from 'google-auth-library';
 import { z } from 'zod';
 import { env } from '../config/env.js';
-import { ApiError } from '../lib/api-error.js';
+import { CustomError, ErrorCode } from '../lib/response-handler.js';
 import { signStateToken } from '../utils/jwt.js';
 
 export const GOOGLE_ERRORS = {
@@ -56,13 +56,19 @@ class GoogleService {
         const message = error.response.statusText;
         const code = error.response.status;
 
-        throw new ApiError(code, message);
+        throw new CustomError(code, ErrorCode.OAUTH_ERROR, message);
       }
 
-      throw ApiError.serviceUnavailable('Unable to reach Google servers');
+      throw new CustomError(
+        503,
+        ErrorCode.SERVICE_UNAVAILABLE,
+        'Unable to reach Google servers'
+      );
     }
 
-    throw ApiError.internalError(
+    throw new CustomError(
+      500,
+      ErrorCode.INTERNAL_SERVER,
       'An unexpected error occurred while communicating with Google'
     );
   }

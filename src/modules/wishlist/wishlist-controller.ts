@@ -2,7 +2,6 @@ import { ForbiddenError } from '@casl/ability';
 import { wrap } from '@mikro-orm/core';
 import { type Request, type Response } from 'express';
 import { db } from '../../database/database-client.js';
-import { ApiResponse } from '../../lib/api-response.js';
 import { ResponseHandler } from '../../lib/response-handler.js';
 import type { PaginationParamSchema } from '../common/common-schemas.js';
 import {
@@ -26,7 +25,7 @@ export const createWishlist = async (
 
   await db.em.flush();
 
-  res.json(ApiResponse.created(wishlist));
+  return ResponseHandler.from(res).created(wishlist);
 };
 
 export const getWishlists = async (
