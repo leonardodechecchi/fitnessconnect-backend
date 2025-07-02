@@ -1,6 +1,5 @@
 import { authenticate } from '../../../middlewares/authenticate-request.js';
 import { SmartRouter } from '../../../openapi/smart-router.js';
-import { paginationParamSchema } from '../../common/common-schemas.js';
 import {
   createTrainerAvailability,
   getTrainerAvailabilities,
@@ -26,6 +25,7 @@ import {
 import {
   slotArraySchema,
   trainerIdSchema,
+  trainerPaginationParamSchema,
   trainerSchema,
   trainerSlotsQueryParams,
   trainersSchema,
@@ -36,7 +36,7 @@ export const trainerRouter = new SmartRouter('/trainers');
 trainerRouter.get(
   '/',
   {
-    request: { query: paginationParamSchema },
+    request: { query: trainerPaginationParamSchema },
     response: trainersSchema,
   },
   authenticate,

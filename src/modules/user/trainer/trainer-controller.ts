@@ -1,27 +1,46 @@
+import type { FilterQuery } from '@mikro-orm/core';
 import type { Request, Response } from 'express';
 import { DateTime, Interval } from 'luxon';
 import { db } from '../../../database/database-client.js';
 import { ResponseHandler } from '../../../lib/response-handler.js';
 import { setTime, toInterval } from '../../../utils/date.js';
 import { BookingStatus } from '../../booking/booking-entity.js';
-import type { PaginationParamSchema } from '../../common/common-schemas.js';
+import type { Trainer } from './trainer-entity.js';
 import {
   type SlotSchema,
   type TrainerIdSchema,
+  type TrainerPaginationParamSchema,
   type TrainerSlotsQueryParams,
 } from './trainer-schemas.js';
 
 export const getTrainers = async (
-  req: Request<unknown, unknown, unknown, PaginationParamSchema>,
+  req: Request<unknown, unknown, unknown, TrainerPaginationParamSchema>,
   res: Response
 ) => {
+  const { name, specialties } = req.query;
+
   const page = Number(req.query.page);
   const limit = Number(req.query.limit);
 
-  const [trainers, totalItems] = await db.trainers.findAndCount(
-    {},
-    { offset: (page - 1) * limit, limit, populate: ['user'] }
-  );
+  const filter: FilterQuery<Trainer> = {};
+
+  if (name) {
+    filter.user = {
+      $or: [{ firstName: { $ilike: name } }, { lastName: { $ilike: name } }],
+    };
+  }
+
+  if (specialties) {
+    filter.specialties = {
+      name: { $in: specialties?.split(',') },
+    };
+  }
+
+  const [trainers, totalItems] = await db.trainers.findAndCount(filter, {
+    offset: (page - 1) * limit,
+    limit,
+    populate: ['user', 'specialties'],
+  });
 
   return ResponseHandler.from(res).paginated(trainers, {
     page,
