@@ -4,6 +4,7 @@ export const wishlistSchema = z.object({
   id: z.string(),
   name: z.string(),
   owner: z.number(),
+  createdAt: z.date(),
 });
 
 export const wishlistArraySchema = z.array(wishlistSchema);

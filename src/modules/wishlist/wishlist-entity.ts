@@ -5,6 +5,7 @@ import {
   OneToMany,
   PrimaryKey,
   Property,
+  type Opt,
   type Ref,
 } from '@mikro-orm/core';
 import type { User } from '../user/user-entity.js';
@@ -23,4 +24,7 @@ export class Wishlist {
 
   @OneToMany(() => Item, (item) => item.wishlist)
   items = new Collection<Item>(this);
+
+  @Property()
+  createdAt: Date & Opt = new Date();
 }
