@@ -72,54 +72,54 @@ export const createAbilityFromRules = (rules: AbilityRule[]): Ability => {
   return createMongoAbility<Ability>(rules);
 };
 
-export const createAbility = (user: User): Ability => {
-  const { can, cannot, build } = new AbilityBuilder<Ability>(
-    createMongoAbility
-  );
+// export const createAbility = (user: User): Ability => {
+//   const { can, cannot, build } = new AbilityBuilder<Ability>(
+//     createMongoAbility
+//   );
 
-  const { role, status } = user;
+//   const { role, status } = user;
 
-  if (status === UserStatus.Restricted) {
-    // ! only read permissions
+//   if (status === UserStatus.Restricted) {
+//     // ! only read permissions
 
-    can('read', Trainer);
-    can('read', Specialty);
-    can('read', User, { id: user.id });
-    can<FlatWishlist>('read', Wishlist, { 'owner.id': user.id });
+//     can('read', Trainer);
+//     can('read', Specialty);
+//     can('read', User, { id: user.id });
+//     can<FlatWishlist>('read', Wishlist, { 'owner.id': user.id });
 
-    return build();
-  }
+//     return build();
+//   }
 
-  // ? Common rules shared between User and Trainer
-  if (role === 'User' || role === 'Trainer') {
-    can('read', Trainer);
-    can('read', Specialty);
-    can('manage', User, { id: user.id });
-    can<FlatTrainer>('create', Trainer, { 'user.id': user.id });
-    cannot('update', User, 'status');
-    can<FlatWishlist>('manage', Wishlist, { 'owner.id': user.id });
-  }
+//   // ? Common rules shared between User and Trainer
+//   if (role === 'User' || role === 'Trainer') {
+//     can('read', Trainer);
+//     can('read', Specialty);
+//     can('manage', User, { id: user.id });
+//     can<FlatTrainer>('create', Trainer, { 'user.id': user.id });
+//     cannot('update', User, 'status');
+//     can<FlatWishlist>('manage', Wishlist, { 'owner.id': user.id });
+//   }
 
-  // ? User specific rules
-  if (role === 'User') {
-    cannot('read', Trainer, 'exceptions');
-    cannot('read', Trainer, 'availabilities');
-  }
+//   // ? User specific rules
+//   if (role === 'User') {
+//     cannot('read', Trainer, 'exceptions');
+//     cannot('read', Trainer, 'availabilities');
+//   }
 
-  // ? Trainer specific rules
-  if (role === 'Trainer') {
-    can<FlatAvailability>(['create', 'read'], Availability, {
-      'trainer.user.id': user.id,
-    });
-    can<FlatException>(['create', 'read'], Exception, {
-      'trainer.user.id': user.id,
-    });
-  }
+//   // ? Trainer specific rules
+//   if (role === 'Trainer') {
+//     can<FlatAvailability>(['create', 'read'], Availability, {
+//       'trainer.user.id': user.id,
+//     });
+//     can<FlatException>(['create', 'read'], Exception, {
+//       'trainer.user.id': user.id,
+//     });
+//   }
 
-  // ? Admin specific rules
-  if (role === 'Admin') {
-    can('manage', 'all');
-  }
+//   // ? Admin specific rules
+//   if (role === 'Admin') {
+//     can('manage', 'all');
+//   }
 
-  return build();
-};
+//   return build();
+// };

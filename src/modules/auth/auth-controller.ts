@@ -1,4 +1,5 @@
 import { type Request, type Response } from 'express';
+import { env } from '../../config/env.js';
 import { db } from '../../database/database-client.js';
 import { ErrorCode, ResponseHandler } from '../../lib/response-handler.js';
 import { redis } from '../../services/redis.js';
@@ -47,7 +48,7 @@ export const login = async (
 
   // TODO: should we move this inside createAuthSession function?
   const rules = createAbilityRules(user);
-  await redis.set('rules', user.id, rules);
+  await redis.set('rules', user.id, rules, env.REFRESH_TOKEN_TTL);
 
   createAuthSession(res, user);
 
@@ -76,14 +77,17 @@ export const register = async (
 export const logout = async (req: Request, res: Response) => {
   const { [AUTH.REFRESH_TOKEN_COOKIE_NAME]: refreshToken } = req.cookies;
 
-  const { exp } = verifyRefreshToken(refreshToken);
+  const { exp, userId } = verifyRefreshToken(refreshToken);
 
   const nowInSeconds = Math.floor(Date.now() / 1000);
   const timeToLive = exp! - nowInSeconds;
 
-  if (timeToLive > 0) {
-    await redis.set('blacklist', refreshToken, true, timeToLive);
-  }
+  await Promise.all([
+    ...(timeToLive > 0
+      ? [redis.set('blacklist', refreshToken, true, timeToLive)]
+      : []),
+    redis.del('rules', userId),
+  ]);
 
   res.clearCookie(AUTH.ACCESS_TOKEN_COOKIE_NAME, AUTH.COOKIE_OPTIONS);
   res.clearCookie(AUTH.REFRESH_TOKEN_COOKIE_NAME, AUTH.COOKIE_OPTIONS);

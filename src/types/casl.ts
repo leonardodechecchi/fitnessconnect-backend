@@ -21,6 +21,7 @@ export type Subject = InferSubjects<
   | typeof Availability
   | typeof Exception
   | typeof Question
+  | 'Dashboard'
   | 'all'
 >;
 
