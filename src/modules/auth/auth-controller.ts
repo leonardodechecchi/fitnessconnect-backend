@@ -2,6 +2,7 @@ import { type Request, type Response } from 'express';
 import { db } from '../../database/database-client.js';
 import { ErrorCode, ResponseHandler } from '../../lib/response-handler.js';
 import { redis } from '../../services/redis.js';
+import { createAbilityRules } from '../../utils/casl.js';
 import {
   signAccessToken,
   verifyAccessToken,
@@ -44,9 +45,13 @@ export const login = async (
     );
   }
 
+  // TODO: should we move this inside createAuthSession function?
+  const rules = createAbilityRules(user);
+  await redis.set('rules', user.id, rules);
+
   createAuthSession(res, user);
 
-  return ResponseHandler.from(res).noData('Login successful');
+  return ResponseHandler.from(res).ok(rules, 'Login successful');
 };
 
 export const register = async (

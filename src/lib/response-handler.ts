@@ -20,6 +20,7 @@ export enum ErrorCode {
   TOKEN_EXPIRED = 'TOKEN_EXPIRED',
   INVALID_INPUT = 'INVALID_INPUT',
   OAUTH_ERROR = 'OAUTH_ERROR',
+  PERMISSION_NOT_FOUND = 'PERMISSION_NOT_FOUND',
 }
 
 export class CustomError extends Error {

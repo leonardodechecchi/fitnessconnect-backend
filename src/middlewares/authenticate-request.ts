@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from 'express';
-import { db } from '../database/database-client.js';
 import { ErrorCode, ResponseHandler } from '../lib/response-handler.js';
 import { AUTH } from '../modules/auth/auth-constants.js';
-import { createAbility } from '../utils/casl.js';
+import { redis } from '../services/redis.js';
+import { createAbilityFromRules } from '../utils/casl.js';
 import { verifyAccessToken } from '../utils/jwt.js';
 
 export const authenticate = async (
@@ -21,9 +21,19 @@ export const authenticate = async (
 
   const { userId } = verifyAccessToken(accessToken);
 
-  const user = await db.users.findOneOrFail(userId);
+  // const user = await db.users.findOneOrFail(userId);
+  // const ability = createAbility(user);
 
-  const ability = createAbility(user);
+  const rules = await redis.get('rules', userId);
+
+  if (!rules || !rules.length) {
+    return ResponseHandler.from(res).unauthorized(
+      ErrorCode.PERMISSION_NOT_FOUND,
+      'Rules not found. Please sign in again'
+    );
+  }
+
+  const ability = createAbilityFromRules(rules);
 
   req.userId = userId;
   req.ability = ability;

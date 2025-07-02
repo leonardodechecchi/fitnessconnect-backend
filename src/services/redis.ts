@@ -1,9 +1,11 @@
 import { Redis } from 'ioredis';
 import { env } from '../config/env.js';
 import { logger } from '../lib/logger.js';
+import type { AbilityRule } from '../types/casl.js';
 
 type RedisKeyMap = {
   blacklist: true;
+  rules: AbilityRule[];
 };
 
 type RedisKeyPrefix = keyof RedisKeyMap;
