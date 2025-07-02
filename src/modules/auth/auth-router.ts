@@ -10,7 +10,7 @@ import {
   refresh,
   register,
 } from './auth-controller.js';
-import { loginSchema, registerSchema } from './auth-schemas.js';
+import { loginSchema, rawRuleSchema, registerSchema } from './auth-schemas.js';
 import {
   facebookLogin,
   facebookLoginCallback,
@@ -45,6 +45,7 @@ authRouter.post(
   '/login',
   {
     request: { body: loginSchema },
+    response: z.array(rawRuleSchema),
   },
   login
 );

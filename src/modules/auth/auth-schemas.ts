@@ -16,5 +16,14 @@ export const registerSchema = z.object({
     .refine((timezone) => DateTime.local().setZone(timezone).isValid),
 });
 
+export const rawRuleSchema = z.object({
+  action: z.union([z.string(), z.array(z.string())]),
+  subject: z.union([z.string(), z.array(z.string())]).optional(),
+  fields: z.array(z.string()).optional(),
+  conditions: z.any().optional(),
+  inverted: z.boolean().optional(),
+  reason: z.string().optional(),
+});
+
 export type LoginSchema = z.infer<typeof loginSchema>;
 export type RegisterSchema = z.infer<typeof registerSchema>;
