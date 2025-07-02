@@ -1,7 +1,7 @@
 import { defineConfig } from '@mikro-orm/postgresql';
 import { TsMorphMetadataProvider } from '@mikro-orm/reflection';
 import { SeedManager } from '@mikro-orm/seeder';
-import { ApiError } from '../lib/api-error.js';
+import { CustomError, ErrorCode } from '../lib/response-handler.js';
 import { Booking } from '../modules/booking/booking-entity.js';
 import { Answer } from '../modules/qa/answer/answer-entity.js';
 import { Question } from '../modules/qa/question/question-entity.js';
@@ -33,7 +33,7 @@ export default defineConfig({
   ],
   extensions: [SeedManager],
   findOneOrFailHandler: (entityName, where) =>
-    ApiError.notFound(`${entityName} not found`),
+    new CustomError(404, ErrorCode.NOT_FOUND, `${entityName} not found`),
   forceUtcTimezone: true,
   metadataProvider: TsMorphMetadataProvider,
   password: env.POSTGRES_PASSWORD,
