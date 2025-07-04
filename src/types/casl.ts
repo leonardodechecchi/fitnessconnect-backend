@@ -11,19 +11,20 @@ import type { Wishlist } from '../modules/wishlist/wishlist-entity.js';
 
 type Action = 'manage' | 'create' | 'read' | 'update' | 'delete';
 
-export type Subject = InferSubjects<
-  | typeof User
-  | typeof Trainer
-  | typeof Wishlist
-  | typeof Item
-  | typeof Specialty
-  | typeof Booking
-  | typeof Availability
-  | typeof Exception
-  | typeof Question
-  | 'Dashboard'
-  | 'all'
->;
+export type Subject =
+  | InferSubjects<
+      | typeof User
+      | typeof Trainer
+      | typeof Wishlist
+      | typeof Item
+      | typeof Specialty
+      | typeof Booking
+      | typeof Availability
+      | typeof Exception
+      | typeof Question,
+      true
+    >
+  | 'all';
 
 export type Ability = MongoAbility<[Action, Subject]>;
 

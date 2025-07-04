@@ -1,6 +1,6 @@
 import type { RequestHandler } from 'express';
 import type { ZodTypeAny } from 'zod';
-import { ResponseHandler } from '../lib/response-handler.js';
+import { ErrorCode, ResponseHandler } from '../lib/response-handler.js';
 
 export const validateRequest = (schemas: {
   params?: ZodTypeAny;
@@ -15,10 +15,12 @@ export const validateRequest = (schemas: {
       if (!result.success) {
         const errorString = result.error.toString();
         return ResponseHandler.from(res).badRequest(
-          'INVALID_INPUT',
+          ErrorCode.INVALID_INPUT,
           errorString
         );
       }
+
+      console.log(result.data);
 
       req.body = result.data;
     });

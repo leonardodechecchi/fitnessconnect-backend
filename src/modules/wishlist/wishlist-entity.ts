@@ -13,6 +13,8 @@ import { Item } from './item/item-entity.js';
 
 @Entity()
 export class Wishlist {
+  static readonly modelName = 'Wishlist';
+
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 

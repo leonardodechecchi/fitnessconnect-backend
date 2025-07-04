@@ -26,6 +26,8 @@ export class User implements UserShape {
   [OptionalProps]?: 'fullName' | 'role' | 'status';
   [HiddenProps]?: 'password' | 'status' | 'role' | 'trainer' | 'admin';
 
+  static readonly modelName = 'User';
+
   @PrimaryKey({ type: 'uuid', defaultRaw: 'gen_random_uuid()' })
   id!: string;
 

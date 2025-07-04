@@ -26,7 +26,7 @@ export const authenticate = async (
 
   const rules = await redis.get('rules', userId);
 
-  if (!rules || !rules.length) {
+  if (!rules) {
     return ResponseHandler.from(res).unauthorized(
       ErrorCode.PERMISSION_NOT_FOUND,
       'Rules not found. Please sign in again'
