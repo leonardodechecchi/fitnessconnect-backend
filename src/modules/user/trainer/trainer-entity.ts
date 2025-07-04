@@ -16,6 +16,8 @@ import { Exception } from './exception/exception-entity.js';
 
 @Entity()
 export class Trainer {
+  static readonly modelName = 'Trainer';
+
   [HiddenProps]?: 'sessionDuration';
 
   @OneToOne({ primary: true })

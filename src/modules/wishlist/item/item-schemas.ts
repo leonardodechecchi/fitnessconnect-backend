@@ -1,4 +1,4 @@
-import type { Ref } from '@mikro-orm/core';
+import { QueryOrder, type Ref } from '@mikro-orm/core';
 import { z } from 'zod';
 import { paginationParamSchema } from '../../common/common-schemas.js';
 import type { Trainer } from '../../user/trainer/trainer-entity.js';
@@ -10,13 +10,16 @@ export interface ItemShape {
   wishlist: Ref<Wishlist>;
 }
 
-export const itemSchema: z.ZodSchema<ItemShape> = z.object({
+export const itemSchema = z.object({
   id: z.string(),
   trainer: z.custom<Ref<Trainer>>(),
   wishlist: z.custom<Ref<Wishlist>>(),
 });
 
-export const itemPaginationParamSchema = paginationParamSchema;
+export const itemPaginationParamSchema = paginationParamSchema.extend({
+  sortBy: z.enum(['createdAt']).optional(),
+  orderBy: z.nativeEnum(QueryOrder).default(QueryOrder.asc),
+});
 
 export const itemArraySchema = z.array(itemSchema);
 

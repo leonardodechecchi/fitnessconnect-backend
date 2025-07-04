@@ -20,9 +20,9 @@ export const validateRequest = (schemas: {
         );
       }
 
-      console.log(result.data);
-
-      req.body = result.data;
+      if (key === 'body') {
+        req.body = result.data;
+      }
     });
 
     next();

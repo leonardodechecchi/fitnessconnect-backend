@@ -1,4 +1,11 @@
-import { Entity, ManyToOne, PrimaryKey, type Ref } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  PrimaryKey,
+  Property,
+  type Opt,
+  type Ref,
+} from '@mikro-orm/core';
 import type { Trainer } from '../../user/trainer/trainer-entity.js';
 import type { Wishlist } from '../wishlist-entity.js';
 import type { ItemShape } from './item-schemas.js';
@@ -13,4 +20,7 @@ export class Item implements ItemShape {
 
   @ManyToOne()
   trainer!: Ref<Trainer>;
+
+  @Property()
+  createdAt: Date & Opt = new Date();
 }

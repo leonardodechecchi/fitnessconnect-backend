@@ -24,6 +24,7 @@ export const createAbilityRules = (user: User): AbilityRule[] => {
     can('manage', 'User', { id: user.id });
     can('manage', 'Wishlist', { 'owner.id': user.id });
     can('read', 'Specialty');
+    can('read', 'Trainer');
   }
 
   // const { role, status } = user;
