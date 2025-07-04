@@ -11,6 +11,7 @@ import {
   createItemSchema,
   itemArraySchema,
   itemIdSchema,
+  itemPaginationParamSchema,
   itemSchema,
 } from './item/item-schemas.js';
 import {
@@ -83,7 +84,7 @@ wishlistRouter.delete(
 wishlistRouter.get(
   '/:wishlistId/items',
   {
-    request: { params: wishlistIdSchema },
+    request: { params: wishlistIdSchema, query: itemPaginationParamSchema },
     response: {
       schema: itemArraySchema,
       options: { enablePagination: true },
