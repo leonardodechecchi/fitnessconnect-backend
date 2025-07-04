@@ -54,7 +54,7 @@ export const getTrainerById = async (
   res: Response
 ) => {
   const trainer = await db.trainers.findOneOrFail(req.params.trainerId, {
-    populate: ['user'],
+    populate: ['user', 'specialties'],
   });
 
   return ResponseHandler.from(res).ok(trainer);

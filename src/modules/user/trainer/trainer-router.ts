@@ -1,5 +1,7 @@
+import { z } from 'zod';
 import { authenticate } from '../../../middlewares/authenticate-request.js';
 import { SmartRouter } from '../../../openapi/smart-router.js';
+import { specialtyArraySchema } from '../../specialty/specialty-schemas.js';
 import {
   createTrainerAvailability,
   getTrainerAvailabilities,
@@ -25,7 +27,6 @@ import {
 } from './trainer-controller.js';
 import {
   slotArraySchema,
-  trainerArraySchema,
   trainerIdSchema,
   trainerPaginationParamSchema,
   trainerSchema,
@@ -39,7 +40,9 @@ trainerRouter.get(
   {
     request: { query: trainerPaginationParamSchema },
     response: {
-      schema: trainerArraySchema,
+      schema: z.array(
+        trainerSchema.extend({ specialties: specialtyArraySchema })
+      ),
       options: { enablePagination: true },
     },
   },
@@ -51,7 +54,9 @@ trainerRouter.get(
   '/:trainerId',
   {
     request: { params: trainerIdSchema },
-    response: { schema: trainerSchema },
+    response: {
+      schema: trainerSchema.extend({ specialties: specialtyArraySchema }),
+    },
   },
   authenticate,
   getTrainerById
