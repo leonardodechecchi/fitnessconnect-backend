@@ -24,6 +24,7 @@ export const getWishlistItems = async (
       offset: (page - 1) * limit,
       limit,
       ...(sortBy ? { orderBy: { [sortBy]: orderBy } } : {}),
+      populate: ['trainer.user'],
     }
   );
 

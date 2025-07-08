@@ -1,11 +1,13 @@
 import { z } from 'zod';
 
-export const wishlistSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  owner: z.number(),
-  createdAt: z.date(),
-});
+export const wishlistSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    owner: z.number(),
+    createdAt: z.date(),
+  })
+  .openapi('Wishlist');
 
 export const wishlistArraySchema = z.array(wishlistSchema);
 

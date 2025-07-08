@@ -10,18 +10,20 @@ export interface ItemShape {
   wishlist: Ref<Wishlist>;
 }
 
-export const itemSchema = z.object({
-  id: z.string(),
-  trainer: z.custom<Ref<Trainer>>(),
-  wishlist: z.custom<Ref<Wishlist>>(),
-});
+export const itemSchema = z
+  .object({
+    id: z.string(),
+    trainer: z.custom<Ref<Trainer>>(),
+    wishlist: z.custom<Ref<Wishlist>>(),
+  })
+  .openapi('Item');
+
+export const itemArraySchema = z.array(itemSchema);
 
 export const itemPaginationParamSchema = paginationParamSchema.extend({
   sortBy: z.enum(['createdAt']).optional(),
   orderBy: z.nativeEnum(QueryOrder).default(QueryOrder.asc),
 });
-
-export const itemArraySchema = z.array(itemSchema);
 
 export const itemIdSchema = z.object({
   itemId: z.string().uuid(),

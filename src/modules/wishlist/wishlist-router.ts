@@ -1,6 +1,8 @@
+import { z } from 'zod';
 import { authenticate } from '../../middlewares/authenticate-request.js';
 import { SmartRouter } from '../../openapi/smart-router.js';
 import { paginationParamSchema } from '../common/common-schemas.js';
+import { trainerSchema } from '../user/trainer/trainer-schemas.js';
 import {
   createWishlistItem,
   deleteWishlistItemById,
@@ -9,7 +11,6 @@ import {
 } from './item/item-controller.js';
 import {
   createItemSchema,
-  itemArraySchema,
   itemIdSchema,
   itemPaginationParamSchema,
   itemSchema,
@@ -86,7 +87,7 @@ wishlistRouter.get(
   {
     request: { params: wishlistIdSchema, query: itemPaginationParamSchema },
     response: {
-      schema: itemArraySchema,
+      schema: z.array(itemSchema.extend({ trainer: trainerSchema })),
       options: { enablePagination: true },
     },
   },
