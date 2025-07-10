@@ -12,8 +12,7 @@ export const getSpecialties = async (
   req: Request<unknown, unknown, unknown, PaginationParamSchema>,
   res: Response
 ) => {
-  const page = Number(req.query.page);
-  const limit = Number(req.query.limit);
+  const { page, limit } = req.query;
 
   const [specialties, totalItems] = await db.specialties.findAndCount(
     {},

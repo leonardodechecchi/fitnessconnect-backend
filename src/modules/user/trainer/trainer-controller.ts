@@ -17,10 +17,7 @@ export const getTrainers = async (
   req: Request<unknown, unknown, unknown, TrainerPaginationParamSchema>,
   res: Response
 ) => {
-  const { name, specialties } = req.query;
-
-  const page = Number(req.query.page);
-  const limit = Number(req.query.limit);
+  const { page, limit, name, specialties } = req.query;
 
   const filter: FilterQuery<Trainer> = {};
 

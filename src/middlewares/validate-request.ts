@@ -11,6 +11,8 @@ export const validateRequest = (schemas: {
     Object.entries(schemas).forEach((entry) => {
       const [key, schema] = entry as [keyof typeof schemas, ZodTypeAny];
 
+      console.log(typeof (req.query as any).page);
+
       const result = schema.safeParse(req[key]);
       if (!result.success) {
         const errorString = result.error.toString();
