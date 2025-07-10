@@ -22,6 +22,7 @@ import {
 } from './wishlist-controller.js';
 import {
   createWishlistSchema,
+  patchWishlistSchema,
   wishlistArraySchema,
   wishlistIdSchema,
   wishlistSchema,
@@ -65,7 +66,7 @@ wishlistRouter.get(
 wishlistRouter.patch(
   '/:wishlistId',
   {
-    request: { params: wishlistIdSchema },
+    request: { params: wishlistIdSchema, body: patchWishlistSchema },
     response: { schema: wishlistSchema },
   },
   authenticate,
