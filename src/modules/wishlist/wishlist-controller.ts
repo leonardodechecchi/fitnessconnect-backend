@@ -32,7 +32,8 @@ export const getWishlists = async (
   req: Request<unknown, unknown, unknown, PaginationParamSchema>,
   res: Response
 ) => {
-  const { page, limit } = req.query;
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
 
   const [wishlists, totalItems] = await db.wishlists.findAndCount(
     { owner: req.userId },

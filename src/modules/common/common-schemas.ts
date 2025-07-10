@@ -2,12 +2,8 @@ import { z } from 'zod';
 import { ErrorCode } from '../../lib/response-handler.js';
 
 export const paginationParamSchema = z.object({
-  page: z
-    .preprocess((page) => Number(page), z.number())
-    .openapi({ example: 1 }),
-  limit: z
-    .preprocess((limit) => Number(limit), z.number())
-    .openapi({ example: 10 }),
+  page: z.string().openapi({ example: '1' }),
+  limit: z.string().openapi({ example: '10' }),
 });
 
 export const successResponseSchema = z.object({

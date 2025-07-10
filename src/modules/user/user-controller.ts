@@ -10,7 +10,8 @@ export const getUsers = async (
   req: Request<unknown, unknown, unknown, PaginationParamSchema>,
   res: Response
 ) => {
-  const { page, limit } = req.query;
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
 
   const [users, totalItems] = await db.users.findAndCount(
     {},

@@ -13,7 +13,8 @@ export const getWishlistItems = async (
   req: Request<WishlistIdSchema, unknown, unknown, ItemPaginationParamSchema>,
   res: Response
 ) => {
-  const { page, limit } = req.query;
+  const page = Number(req.query.page);
+  const limit = Number(req.query.limit);
 
   const { sortBy, orderBy } = req.query;
 
